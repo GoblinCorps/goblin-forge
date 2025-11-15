@@ -1,0 +1,69 @@
+# Screener - Multi-Timeframe Momentum Reversal Trading System
+# Python 3.9+ Required
+
+# ===== Interactive Brokers API =====
+ib-insync>=0.9.86
+# ibapi is a dependency of ib-insync
+
+# ===== Data Processing =====
+pandas>=2.0.0
+numpy>=1.24.0
+polars>=0.19.0          # High-performance alternative for large-scale screening
+pyarrow>=13.0.0         # Parquet file I/O
+
+# ===== Technical Analysis =====
+TA-Lib>=0.4.28          # Core technical indicators (requires C library installation)
+pandas-ta>=0.3.14       # Additional indicators
+
+# ===== Database =====
+sqlalchemy>=2.0.0       # Database ORM
+psycopg2-binary>=2.9.9  # PostgreSQL driver (production)
+# sqlite3 is built-in for development
+
+# ===== Real-Time Dashboard =====
+dash>=2.14.0                    # Web-based dashboard framework
+plotly>=5.17.0                  # Interactive charting
+dash-bootstrap-components>=1.5.0 # UI components
+
+# ===== Utilities =====
+loguru>=0.7.0           # Advanced logging
+python-dotenv>=1.0.0    # Environment configuration
+schedule>=1.2.0         # Task scheduling
+pyyaml>=6.0            # YAML configuration parsing
+requests>=2.31.0        # HTTP requests for data fetching
+
+# ===== Testing =====
+pytest>=7.4.0           # Testing framework
+pytest-cov>=4.1.0       # Coverage reporting
+pytest-asyncio>=0.21.0  # Async testing support
+
+# ===== Development Tools =====
+black>=23.0.0           # Code formatting
+flake8>=6.0.0          # Linting
+mypy>=1.0.0            # Type checking
+ipython>=8.12.0        # Interactive shell
+
+# ===== Performance & Monitoring =====
+tqdm>=4.65.0           # Progress bars
+memory-profiler>=0.61.0 # Memory profiling
+
+# ===== Installation Notes =====
+#
+# TA-Lib requires C library installation first:
+#
+# Ubuntu/Debian:
+#   wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+#   tar -xzf ta-lib-0.4.0-src.tar.gz
+#   cd ta-lib/
+#   ./configure --prefix=/usr
+#   make
+#   sudo make install
+#   pip install TA-Lib
+#
+# macOS (Homebrew):
+#   brew install ta-lib
+#   pip install TA-Lib
+#
+# Windows:
+#   Download TA-Lib wheel from: https://www.lfd.uci.edu/~gohlke/pythonlibs/#ta-lib
+#   pip install TA_Lib‑0.4.XX‑cpXX‑cpXX‑win_amd64.whl
