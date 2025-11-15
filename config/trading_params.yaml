@@ -18,13 +18,13 @@ universe:
     - PINK                          # Pink sheets (OTC)
     - OTCBB                         # OTC Bulletin Board
 
-  # Symbol sources
-  include_sp500: true               # Include S&P 500 components
-  include_nasdaq100: true           # Include NASDAQ 100 components
-  include_russell2000: false        # Include Russell 2000 (slower screening)
-
-  # Universe size
-  target_size: 1000                 # Target number of symbols to screen
+  # Symbol sources (from US-Stock-Symbols GitHub repo)
+  # Options: NYSE, NASDAQ, AMEX, ALL
+  # Note: Using ALL may result in ~6800 symbols (slower screening)
+  # Recommended: Use specific exchanges for better performance
+  sources:
+    - NYSE                          # New York Stock Exchange (~3000 tickers)
+    - NASDAQ                        # NASDAQ Stock Market (~3500 tickers)
   max_size: 2000                    # Maximum symbols (performance limit)
 
 # ===== Timeframe Configuration =====

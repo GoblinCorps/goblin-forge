@@ -5,10 +5,14 @@ Builds and maintains the tradeable universe of stocks for screening.
 
 Universe Sources:
 -----------------
-1. S&P 500 (large-cap focus)
-2. NASDAQ 100 (tech-heavy)
-3. Russell 2000 (small-cap)
-4. Custom symbol lists (user-defined)
+1. NYSE - New York Stock Exchange (~3,000 tickers)
+2. NASDAQ - NASDAQ Stock Market (~3,500 tickers)
+3. AMEX - American Stock Exchange (~300 tickers)
+4. All Exchanges - Combined deduplicated list
+5. Custom symbol lists (user-defined)
+
+Data Source: US-Stock-Symbols GitHub (auto-updates daily)
+https://github.com/rreichel3/US-Stock-Symbols
 
 Pre-Screening Filters:
 ----------------------
@@ -46,6 +50,7 @@ from loguru import logger
 
 from src.config import config
 from src.data.ib_manager import ib_manager
+from src.data.ticker_downloader import ticker_downloader
 
 
 class UniverseManager:
@@ -65,28 +70,8 @@ class UniverseManager:
         Cached universe data
     """
 
-    # Default symbol lists (can be overridden with data files)
-    DEFAULT_SYMBOLS = {
-        'sp500': [
-            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA', 'BRK.B', 'UNH', 'JNJ',
-            'V', 'XOM', 'WMT', 'JPM', 'MA', 'PG', 'CVX', 'LLY', 'HD', 'MRK',
-            'ABBV', 'PEP', 'KO', 'AVGO', 'COST', 'ADBE', 'TMO', 'MCD', 'CSCO', 'ACN',
-            'CRM', 'ABT', 'NFLX', 'DHR', 'NKE', 'VZ', 'DIS', 'WFC', 'AMD', 'INTC',
-            'QCOM', 'TXN', 'CMCSA', 'PM', 'UNP', 'BMY', 'ORCL', 'NEE', 'AMGN', 'RTX',
-            # Add more S&P 500 symbols as needed
-        ],
-        'nasdaq100': [
-            'AAPL', 'MSFT', 'GOOGL', 'GOOG', 'AMZN', 'NVDA', 'META', 'TSLA', 'AVGO', 'COST',
-            'NFLX', 'ADBE', 'CSCO', 'PEP', 'INTC', 'QCOM', 'CMCSA', 'TXN', 'AMAT', 'INTU',
-            'AMD', 'HON', 'AMGN', 'SBUX', 'ISRG', 'BKNG', 'GILD', 'ADI', 'VRTX', 'ADP',
-            'MDLZ', 'PYPL', 'REGN', 'MU', 'LRCX', 'PANW', 'KLAC', 'ABNB', 'SNPS', 'CDNS',
-            # Add more NASDAQ-100 symbols as needed
-        ],
-        'russell2000_sample': [
-            # Sample of liquid Russell 2000 stocks
-            'SAVA', 'UPST', 'BBIO', 'OSCR', 'VRNS', 'TERN', 'PRCT', 'BTAI', 'MDGL', 'CRSP',
-        ]
-    }
+    # Supported exchange sources
+    SUPPORTED_EXCHANGES = ['NYSE', 'NASDAQ', 'AMEX', 'ALL']
 
     def __init__(self, data_dir: Optional[str] = None):
         """
@@ -124,7 +109,7 @@ class UniverseManager:
         Parameters:
         -----------
         source : str
-            Source name ('sp500', 'nasdaq100', 'russell2000', 'custom')
+            Source name ('NYSE', 'NASDAQ', 'AMEX', 'ALL', or 'custom')
         file_path : str, optional
             Path to custom symbol list file (JSON or CSV)
 
@@ -135,9 +120,10 @@ class UniverseManager:
 
         Examples:
         ---------
-        >>> symbols = universe_manager.load_symbol_list('sp500')
+        >>> symbols = universe_manager.load_symbol_list('NYSE')
         >>> len(symbols)
-        50
+        ~3000
+        >>> nasdaq = universe_manager.load_symbol_list('NASDAQ')
         >>> custom = universe_manager.load_symbol_list(
         ...     'custom',
         ...     file_path='data/my_symbols.json'
@@ -165,19 +151,24 @@ class UniverseManager:
             if source in self.symbol_lists:
                 return self.symbol_lists[source]
 
+            # Handle exchange sources (NYSE, NASDAQ, AMEX, ALL)
+            source_upper = source.upper()
+            if source_upper in self.SUPPORTED_EXCHANGES:
+                if source_upper == 'ALL':
+                    symbols = ticker_downloader.get_all_tickers()
+                else:
+                    symbols = ticker_downloader.get_tickers(source_upper)
+
+                logger.info(f"Loaded {len(symbols)} symbols from {source_upper} via ticker downloader")
+                self.symbol_lists[source] = symbols
+                return symbols
+
             # Try to load from data directory
             json_path = self.data_dir / f"{source}.json"
             if json_path.exists():
                 with open(json_path, 'r') as f:
                     symbols = json.load(f)
                 logger.info(f"Loaded {len(symbols)} symbols from {json_path}")
-                self.symbol_lists[source] = symbols
-                return symbols
-
-            # Fall back to default symbols
-            if source in self.DEFAULT_SYMBOLS:
-                symbols = self.DEFAULT_SYMBOLS[source]
-                logger.info(f"Using default {source} symbols: {len(symbols)}")
                 self.symbol_lists[source] = symbols
                 return symbols
 
@@ -233,7 +224,7 @@ class UniverseManager:
         -----------
         sources : list of str, optional
             List of sources to combine. If None, uses config default.
-            Options: 'sp500', 'nasdaq100', 'russell2000', 'custom'
+            Options: 'NYSE', 'NASDAQ', 'AMEX', 'ALL', or custom file sources
 
         Returns:
         --------
@@ -242,9 +233,15 @@ class UniverseManager:
 
         Examples:
         ---------
-        >>> universe = universe_manager.build_universe(['sp500', 'nasdaq100'])
+        >>> # Build from NYSE and NASDAQ
+        >>> universe = universe_manager.build_universe(['NYSE', 'NASDAQ'])
         >>> len(universe)
-        120
+        ~6000
+
+        >>> # Build from all exchanges
+        >>> universe = universe_manager.build_universe(['ALL'])
+        >>> len(universe)
+        ~6800
         """
         if sources is None:
             sources = config.universe.sources
