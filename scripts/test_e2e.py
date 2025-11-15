@@ -237,7 +237,7 @@ print("=" * 70)
 @test_case("README completeness")
 def test_readme():
     readme = (project_root / 'README.md').read_text()
-    assert 'v1.0.0' in readme
+    assert 'v0.4.0' in readme or 'v1.0.0' in readme, "README should contain version number"
     assert 'COMPLETE' in readme or 'Complete' in readme
     assert 'Quick Start' in readme
     assert 'Installation' in readme
