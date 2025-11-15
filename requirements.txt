@@ -13,7 +13,6 @@ pyarrow>=13.0.0         # Parquet file I/O
 
 # ===== Technical Analysis =====
 TA-Lib>=0.4.28          # Core technical indicators (requires C library installation)
-pandas-ta>=0.3.14       # Additional indicators
 
 # ===== Database =====
 sqlalchemy>=2.0.0       # Database ORM

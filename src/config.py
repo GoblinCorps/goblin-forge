@@ -163,6 +163,11 @@ class Config:
         return self.system.logging
 
     @property
+    def storage(self) -> ConfigDict:
+        """Storage configuration."""
+        return self.system.storage
+
+    @property
     def universe(self) -> ConfigDict:
         """Universe configuration."""
         return self.trading.universe
