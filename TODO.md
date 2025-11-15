@@ -1,9 +1,10 @@
 # Screener Trading System - TODO
 
-**Last Updated**: 2025-11-15 21:35
-**Status**: ✅ **ALL 4 CORE PHASES COMPLETE + SINGLETON FIXES**
+**Last Updated**: 2025-11-15 21:50
+**Status**: ✅ **ALL 4 CORE PHASES COMPLETE + IB GATEWAY TESTED**
 **Progress**: 100% of first 4 phases (216 tests total, 166/167 passing = 99.4%)
-**Latest**: Singleton exports fixed (commit `4045694`)
+**IB Gateway**: ✅ TESTED - 39/40 tests passing (97.5%) with live connection
+**Latest**: IB Gateway integration validated (port 4002)
 
 ---
 
@@ -145,6 +146,8 @@
 \* 3/9 E2E tests pass without IB; all 9 ready for IB deployment
 
 **Recent Improvements**:
+- ✅ **IB Gateway integration TESTED** (39/40 tests passing, 97.5%)
+- ✅ Historical data fetching verified with live IB Gateway (AAPL, multiple timeframes)
 - ✅ Fixed ImportError issues with singleton exports (commit `4045694`)
 - ✅ Test pass rate improved from 93.8% to 99.4%
 - ✅ Added `ib_manager` and `historical_manager` singleton instances for convenient imports
