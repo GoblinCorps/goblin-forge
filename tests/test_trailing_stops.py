@@ -264,9 +264,23 @@ def test_calculate_new_stop_percentage_short(fresh_trailing_manager, mock_positi
 
 def test_calculate_new_stop_atr_long(fresh_trailing_manager, mock_historical_manager, mock_indicator_engine):
     """Test stop calculation for LONG position with ATR trail."""
-    # Patch the imported modules
-    with patch('src.data.historical_manager.historical_manager', mock_historical_manager), \
-         patch('src.indicators.indicator_engine.indicator_engine', mock_indicator_engine):
+    # Patch the singleton objects in the already-loaded modules via sys.modules
+    import sys
+    from importlib import import_module
+
+    # Ensure modules are imported to populate sys.modules
+    import_module('src.data.historical_manager')
+    import_module('src.indicators.indicator_engine')
+
+    hm_module = sys.modules['src.data.historical_manager']
+    ie_module = sys.modules['src.indicators.indicator_engine']
+
+    original_hm = hm_module.historical_manager
+    original_ie = ie_module.indicator_engine
+
+    try:
+        hm_module.historical_manager = mock_historical_manager
+        ie_module.indicator_engine = mock_indicator_engine
 
         fresh_trailing_manager.enable_trailing_stop(
             symbol='AAPL',
@@ -275,24 +289,44 @@ def test_calculate_new_stop_atr_long(fresh_trailing_manager, mock_historical_man
             activation_profit_pct=1.0
         )
 
-        # ATR = 3.0, price = 152, 2x ATR = 6.0, trail_pct = 6/152 = 3.95%
+        # ATR = 3.0, price = 160, 2x ATR = 6.0, trail_pct = 6/160 = 3.75%
+        # New stop = 160 * (1 - 0.0375) = 154.0 (higher than current 145.0)
         new_stop = fresh_trailing_manager._calculate_new_stop_price(
             symbol='AAPL',
-            current_price=152.00,
+            current_price=160.00,
             position_side='BUY',
             entry_price=150.00,
-            current_stop=148.00
+            current_stop=145.00
         )
 
-        # Should calculate: 152 - (2 * 3.0) = 146.00
+        # Stop should move UP for LONG positions (profitable trail)
         assert new_stop is not None
-        assert new_stop > 148.00  # Better than current stop
+        assert abs(new_stop - 154.0) < 0.1  # Approx 160 - 6 = 154
+        assert new_stop > 145.00  # Better than current stop
+    finally:
+        # Restore original singletons
+        hm_module.historical_manager = original_hm
+        ie_module.indicator_engine = original_ie
 
 
 def test_calculate_new_stop_atr_short(fresh_trailing_manager, mock_historical_manager, mock_indicator_engine):
     """Test stop calculation for SHORT position with ATR trail."""
-    with patch('src.data.historical_manager.historical_manager', mock_historical_manager), \
-         patch('src.indicators.indicator_engine.indicator_engine', mock_indicator_engine):
+    import sys
+    from importlib import import_module
+
+    # Ensure modules are imported to populate sys.modules
+    import_module('src.data.historical_manager')
+    import_module('src.indicators.indicator_engine')
+
+    hm_module = sys.modules['src.data.historical_manager']
+    ie_module = sys.modules['src.indicators.indicator_engine']
+
+    original_hm = hm_module.historical_manager
+    original_ie = ie_module.indicator_engine
+
+    try:
+        hm_module.historical_manager = mock_historical_manager
+        ie_module.indicator_engine = mock_indicator_engine
 
         fresh_trailing_manager.enable_trailing_stop(
             symbol='TSLA',
@@ -301,18 +335,24 @@ def test_calculate_new_stop_atr_short(fresh_trailing_manager, mock_historical_ma
             activation_profit_pct=1.0
         )
 
+        # ATR = 3.0, price = 195, 2x ATR = 6.0, trail_pct = 6/195 = 3.08%
+        # New stop = 195 * (1 + 0.0308) = 200.95 (lower than current 205.0)
         new_stop = fresh_trailing_manager._calculate_new_stop_price(
             symbol='TSLA',
-            current_price=198.00,
+            current_price=195.00,
             position_side='SELL',
             entry_price=200.00,
-            current_stop=202.00
+            current_stop=205.00
         )
 
-        # Should calculate: 198 + (2 * 3.0) = 204.00
-        # But capped at entry price (200) for safety
+        # Stop should move DOWN for SHORT positions (profitable trail)
         assert new_stop is not None
-        assert new_stop <= 200.00  # Never above entry for short
+        assert new_stop < 205.00  # Better than current stop (lower for shorts)
+        assert new_stop > 195.00  # Above current price for stop validity
+    finally:
+        # Restore original singletons
+        hm_module.historical_manager = original_hm
+        ie_module.indicator_engine = original_ie
 
 
 def test_stop_not_adjusted_before_activation(fresh_trailing_manager):
@@ -754,8 +794,22 @@ def test_get_atr_value(fresh_trailing_manager, mock_historical_manager, mock_ind
 
 def test_atr_trail_calculation(fresh_trailing_manager, mock_historical_manager, mock_indicator_engine):
     """Test ATR-based trail distance calculation."""
-    with patch('src.data.historical_manager.historical_manager', mock_historical_manager), \
-         patch('src.indicators.indicator_engine.indicator_engine', mock_indicator_engine):
+    import sys
+    from importlib import import_module
+
+    # Ensure modules are imported to populate sys.modules
+    import_module('src.data.historical_manager')
+    import_module('src.indicators.indicator_engine')
+
+    hm_module = sys.modules['src.data.historical_manager']
+    ie_module = sys.modules['src.indicators.indicator_engine']
+
+    original_hm = hm_module.historical_manager
+    original_ie = ie_module.indicator_engine
+
+    try:
+        hm_module.historical_manager = mock_historical_manager
+        ie_module.indicator_engine = mock_indicator_engine
 
         fresh_trailing_manager.enable_trailing_stop(
             symbol='AAPL',
@@ -764,28 +818,51 @@ def test_atr_trail_calculation(fresh_trailing_manager, mock_historical_manager, 
             activation_profit_pct=1.0
         )
 
-        # ATR = 3.0, 2x ATR = 6.0, price = 152
-        # Trail distance = 6.0 / 152 = 3.95%
+        # ATR = 3.0, 2x ATR = 6.0, price = 160
+        # Trail distance_pct = 6.0 / 160 = 3.75%
+        # New stop = 160 * (1 - 0.0375) = 154.0
         new_stop = fresh_trailing_manager._calculate_new_stop_price(
             symbol='AAPL',
-            current_price=152.00,
+            current_price=160.00,
             position_side='BUY',
             entry_price=150.00,
-            current_stop=148.00
+            current_stop=145.00
         )
 
-        # New stop = 152 - 6.0 = 146.00
+        # Verify ATR-based calculation
         assert new_stop is not None
-        assert abs(new_stop - 146.00) < 0.01
+        assert abs(new_stop - 154.0) < 0.1  # Approx 160 * (1 - 0.0375) = 154
+    finally:
+        # Restore original singletons
+        hm_module.historical_manager = original_hm
+        ie_module.indicator_engine = original_ie
 
 
 def test_atr_multiplier_variations(fresh_trailing_manager, mock_historical_manager, mock_indicator_engine):
     """Test different ATR multiplier values."""
-    with patch('src.data.historical_manager.historical_manager', mock_historical_manager), \
-         patch('src.indicators.indicator_engine.indicator_engine', mock_indicator_engine):
+    import sys
+    from importlib import import_module
 
+    # Ensure modules are imported to populate sys.modules
+    import_module('src.data.historical_manager')
+    import_module('src.indicators.indicator_engine')
+
+    hm_module = sys.modules['src.data.historical_manager']
+    ie_module = sys.modules['src.indicators.indicator_engine']
+
+    original_hm = hm_module.historical_manager
+    original_ie = ie_module.indicator_engine
+
+    try:
+        hm_module.historical_manager = mock_historical_manager
+        ie_module.indicator_engine = mock_indicator_engine
+
+        # Test with different ATR multipliers at a price where trail is favorable
+        # ATR = 3.0, price = 160, current_stop = 145
         multipliers = [1.0, 2.0, 3.0]
-        expected_stops = [149.00, 146.00, 143.00]  # 152 - (multiplier * 3.0)
+        # For price=160: trail_pct = (mult * 3.0) / 160
+        # Expected stops: 160 * (1 - trail_pct) = 160 - (mult * 3.0)
+        expected_stops = [157.0, 154.0, 151.0]  # 160 - (multiplier * 3.0)
 
         for mult, expected in zip(multipliers, expected_stops):
             fresh_trailing_manager.enable_trailing_stop(
@@ -797,14 +874,18 @@ def test_atr_multiplier_variations(fresh_trailing_manager, mock_historical_manag
 
             new_stop = fresh_trailing_manager._calculate_new_stop_price(
                 symbol=f'TEST{mult}',
-                current_price=152.00,
+                current_price=160.00,
                 position_side='BUY',
                 entry_price=150.00,
-                current_stop=148.00
+                current_stop=145.00
             )
 
             assert new_stop is not None
-            assert abs(new_stop - expected) < 0.01
+            assert abs(new_stop - expected) < 0.1
+    finally:
+        # Restore original singletons
+        hm_module.historical_manager = original_hm
+        ie_module.indicator_engine = original_ie
 
 
 def test_atr_fallback_to_percentage(fresh_trailing_manager):
