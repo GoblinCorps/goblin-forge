@@ -1,0 +1,1016 @@
+/*
+Desktop Kymera UI Theme
+Sophisticated AI trading interface with glass-morphism design
+
+Version: 1.0.0
+Author: Screener Trading System
+Date: 2025-11-15
+
+Brand Identity:
+- Concept: Hybrid AI trading intelligence (Kymera = fusion/chimera)
+- Aesthetic: Sophisticated command center for professional traders
+- Feel: Calm, confident, data-rich, futuristic but professional
+*/
+
+/* ============================================================================
+   CSS VARIABLES - Color Palette & Design Tokens
+   ============================================================================ */
+
+:root {
+    /* === Background Colors === */
+    --kymera-bg-base: #0a0e1a;
+    --kymera-bg-elevated: #0f1419;
+    --kymera-surface: rgba(26, 31, 46, 0.5);
+    --kymera-card: rgba(30, 36, 51, 0.8);
+
+    /* === Primary Accents (Cyan/Teal) === */
+    --kymera-primary: #00d4ff;
+    --kymera-primary-dark: #00a3cc;
+    --kymera-primary-light: #33ddff;
+    --kymera-primary-glow: rgba(0, 212, 255, 0.3);
+    --kymera-primary-subtle: rgba(0, 212, 255, 0.1);
+
+    /* === Secondary Accents (Purple) === */
+    --kymera-secondary: #8b5cf6;
+    --kymera-secondary-dark: #7c3aed;
+    --kymera-secondary-light: #a855f7;
+    --kymera-secondary-glow: rgba(139, 92, 246, 0.3);
+    --kymera-secondary-subtle: rgba(139, 92, 246, 0.1);
+
+    /* === Functional Colors === */
+    --kymera-success: #00ff9f;
+    --kymera-success-bg: rgba(0, 255, 159, 0.1);
+    --kymera-success-glow: rgba(0, 255, 159, 0.3);
+
+    --kymera-danger: #ff6b6b;
+    --kymera-danger-bg: rgba(255, 107, 107, 0.1);
+    --kymera-danger-glow: rgba(255, 107, 107, 0.3);
+
+    --kymera-warning: #ffa500;
+    --kymera-warning-bg: rgba(255, 165, 0, 0.1);
+
+    --kymera-info: #3b82f6;
+    --kymera-info-bg: rgba(59, 130, 246, 0.1);
+
+    /* === Text Colors === */
+    --kymera-text-primary: #f8fafc;
+    --kymera-text-secondary: #cbd5e1;
+    --kymera-text-muted: #94a3b8;
+    --kymera-text-disabled: #64748b;
+
+    /* === Borders & Dividers === */
+    --kymera-border: rgba(0, 212, 255, 0.12);
+    --kymera-border-secondary: rgba(139, 92, 246, 0.12);
+    --kymera-border-subtle: rgba(255, 255, 255, 0.05);
+
+    /* === Shadows & Glows === */
+    --kymera-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --kymera-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+    --kymera-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+    --kymera-glow-primary: 0 0 20px var(--kymera-primary-glow);
+    --kymera-glow-secondary: 0 0 20px var(--kymera-secondary-glow);
+    --kymera-glow-success: 0 0 15px var(--kymera-success-glow);
+    --kymera-glow-danger: 0 0 15px var(--kymera-danger-glow);
+
+    /* === Glass-morphism === */
+    --kymera-glass-bg: rgba(26, 31, 46, 0.6);
+    --kymera-glass-border: rgba(255, 255, 255, 0.1);
+    --kymera-blur: blur(16px);
+    --kymera-blur-heavy: blur(24px);
+
+    /* === Typography === */
+    --kymera-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    --kymera-font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Consolas', monospace;
+
+    --kymera-font-size-xs: 0.625rem;    /* 10px */
+    --kymera-font-size-sm: 0.75rem;     /* 12px */
+    --kymera-font-size-base: 0.875rem;  /* 14px */
+    --kymera-font-size-md: 1rem;        /* 16px */
+    --kymera-font-size-lg: 1.125rem;    /* 18px */
+    --kymera-font-size-xl: 1.25rem;     /* 20px */
+    --kymera-font-size-2xl: 1.5rem;     /* 24px */
+    --kymera-font-size-3xl: 1.875rem;   /* 30px */
+    --kymera-font-size-4xl: 2.25rem;    /* 36px */
+
+    --kymera-font-light: 300;
+    --kymera-font-normal: 400;
+    --kymera-font-medium: 500;
+    --kymera-font-semibold: 600;
+    --kymera-font-bold: 700;
+    --kymera-font-extrabold: 800;
+
+    /* === Spacing Scale === */
+    --kymera-space-xs: 0.25rem;   /* 4px */
+    --kymera-space-sm: 0.5rem;    /* 8px */
+    --kymera-space-md: 1rem;      /* 16px */
+    --kymera-space-lg: 1.5rem;    /* 24px */
+    --kymera-space-xl: 2rem;      /* 32px */
+    --kymera-space-2xl: 2.5rem;   /* 40px */
+    --kymera-space-3xl: 3rem;     /* 48px */
+
+    /* === Border Radius === */
+    --kymera-radius-sm: 4px;
+    --kymera-radius-md: 8px;
+    --kymera-radius-lg: 12px;
+    --kymera-radius-xl: 16px;
+    --kymera-radius-full: 9999px;
+
+    /* === Transitions === */
+    --kymera-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --kymera-transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    --kymera-transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* === Z-Index Scale === */
+    --kymera-z-base: 1;
+    --kymera-z-dropdown: 100;
+    --kymera-z-sticky: 200;
+    --kymera-z-overlay: 300;
+    --kymera-z-modal: 400;
+    --kymera-z-toast: 500;
+}
+
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+body {
+    background: linear-gradient(135deg, var(--kymera-bg-base) 0%, var(--kymera-bg-elevated) 100%);
+    background-attachment: fixed;
+    font-family: var(--kymera-font-primary);
+    color: var(--kymera-text-primary);
+    font-size: var(--kymera-font-size-base);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Typography Overrides */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--kymera-font-primary);
+    color: var(--kymera-text-primary);
+    font-weight: var(--kymera-font-semibold);
+    line-height: 1.2;
+    margin: 0;
+}
+
+h1 { font-size: var(--kymera-font-size-4xl); }
+h2 { font-size: var(--kymera-font-size-3xl); }
+h3 { font-size: var(--kymera-font-size-2xl); }
+h4 { font-size: var(--kymera-font-size-xl); }
+h5 { font-size: var(--kymera-font-size-lg); }
+h6 { font-size: var(--kymera-font-size-md); }
+
+p {
+    margin: 0 0 var(--kymera-space-md) 0;
+}
+
+a {
+    color: var(--kymera-primary);
+    text-decoration: none;
+    transition: color var(--kymera-transition-fast);
+}
+
+a:hover {
+    color: var(--kymera-primary-light);
+    text-decoration: underline;
+}
+
+code {
+    font-family: var(--kymera-font-mono);
+    background: var(--kymera-primary-subtle);
+    padding: 2px 6px;
+    border-radius: var(--kymera-radius-sm);
+    font-size: 0.9em;
+}
+
+
+/* ============================================================================
+   GLASS-MORPHISM CARDS
+   ============================================================================ */
+
+.kymera-card {
+    background: var(--kymera-glass-bg);
+    backdrop-filter: var(--kymera-blur);
+    -webkit-backdrop-filter: var(--kymera-blur);
+    border: 1px solid var(--kymera-glass-border);
+    border-radius: var(--kymera-radius-lg);
+    box-shadow: var(--kymera-shadow-md);
+    padding: var(--kymera-space-lg);
+    transition: all var(--kymera-transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+
+.kymera-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--kymera-primary) 0%, var(--kymera-secondary) 100%);
+    opacity: 0;
+    transition: opacity var(--kymera-transition-normal);
+}
+
+.kymera-card:hover {
+    border-color: var(--kymera-border);
+    box-shadow: var(--kymera-shadow-lg), var(--kymera-glow-primary);
+    transform: translateY(-2px);
+}
+
+.kymera-card:hover::before {
+    opacity: 1;
+}
+
+.kymera-card-header {
+    background: transparent;
+    border-bottom: 1px solid var(--kymera-border-subtle);
+    padding: var(--kymera-space-md) var(--kymera-space-lg);
+    margin: calc(-1 * var(--kymera-space-lg)) calc(-1 * var(--kymera-space-lg)) var(--kymera-space-lg) calc(-1 * var(--kymera-space-lg));
+}
+
+.kymera-card-body {
+    padding: var(--kymera-space-md) 0;
+}
+
+
+/* ============================================================================
+   HEADERS & BRANDING
+   ============================================================================ */
+
+.kymera-header {
+    background: linear-gradient(90deg, var(--kymera-primary) 0%, var(--kymera-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: var(--kymera-font-semibold);
+    font-size: var(--kymera-font-size-2xl);
+    letter-spacing: -0.02em;
+    margin-bottom: var(--kymera-space-md);
+}
+
+.kymera-logo {
+    font-family: var(--kymera-font-primary);
+    font-weight: var(--kymera-font-bold);
+    margin: 0;
+    font-size: var(--kymera-font-size-2xl);
+    letter-spacing: -0.02em;
+}
+
+.kymera-brand-prefix {
+    color: var(--kymera-text-secondary);
+    font-weight: var(--kymera-font-light);
+}
+
+.kymera-brand-name {
+    background: linear-gradient(135deg, var(--kymera-primary) 0%, var(--kymera-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: var(--kymera-font-bold);
+    letter-spacing: 0.05em;
+}
+
+.kymera-tagline {
+    color: var(--kymera-text-muted);
+    font-size: var(--kymera-font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 0;
+    margin-top: calc(-1 * var(--kymera-space-xs));
+}
+
+.kymera-branding {
+    padding: var(--kymera-space-md) 0;
+}
+
+
+/* ============================================================================
+   NAVBAR
+   ============================================================================ */
+
+.kymera-navbar {
+    background: var(--kymera-glass-bg) !important;
+    backdrop-filter: var(--kymera-blur);
+    -webkit-backdrop-filter: var(--kymera-blur);
+    border-bottom: 1px solid var(--kymera-border);
+    padding: var(--kymera-space-md) 0;
+    box-shadow: var(--kymera-shadow-md);
+    position: sticky;
+    top: 0;
+    z-index: var(--kymera-z-sticky);
+}
+
+.kymera-status-text {
+    color: var(--kymera-success);
+    font-size: var(--kymera-font-size-sm);
+    font-weight: var(--kymera-font-semibold);
+    letter-spacing: 0.05em;
+    font-family: var(--kymera-font-mono);
+}
+
+
+/* ============================================================================
+   STATUS INDICATORS
+   ============================================================================ */
+
+.kymera-status-online {
+    color: var(--kymera-success);
+}
+
+.kymera-status-offline {
+    color: var(--kymera-danger);
+}
+
+.kymera-status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--kymera-radius-full);
+    margin-right: var(--kymera-space-sm);
+    animation: kymera-pulse 2s infinite;
+}
+
+.kymera-status-dot.online {
+    background: var(--kymera-success);
+    box-shadow: var(--kymera-glow-success);
+}
+
+.kymera-status-dot.offline {
+    background: var(--kymera-danger);
+    box-shadow: var(--kymera-glow-danger);
+    animation: none;
+}
+
+
+/* ============================================================================
+   DATA TABLES
+   ============================================================================ */
+
+.kymera-table {
+    background: var(--kymera-card);
+    border-radius: var(--kymera-radius-md);
+    overflow: hidden;
+    border: 1px solid var(--kymera-border-subtle);
+}
+
+.kymera-table-header {
+    background: var(--kymera-primary-subtle);
+    color: var(--kymera-primary);
+    font-weight: var(--kymera-font-semibold);
+    text-transform: uppercase;
+    font-size: var(--kymera-font-size-xs);
+    letter-spacing: 0.05em;
+    padding: var(--kymera-space-md);
+    border-bottom: 1px solid var(--kymera-border);
+}
+
+.kymera-table-row {
+    border-bottom: 1px solid var(--kymera-border-subtle);
+    transition: background-color var(--kymera-transition-fast);
+}
+
+.kymera-table-row:hover {
+    background: var(--kymera-primary-subtle);
+}
+
+.kymera-table-cell {
+    padding: var(--kymera-space-md);
+    color: var(--kymera-text-secondary);
+}
+
+/* Dash DataTable overrides */
+.dash-table-container {
+    background: transparent !important;
+}
+
+.dash-table-container .dash-spreadsheet-container {
+    background: var(--kymera-card) !important;
+    border: 1px solid var(--kymera-border-subtle) !important;
+    border-radius: var(--kymera-radius-md) !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner {
+    background: transparent !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner table {
+    font-family: var(--kymera-font-mono) !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner th {
+    background: var(--kymera-primary-subtle) !important;
+    color: var(--kymera-primary) !important;
+    font-weight: var(--kymera-font-semibold) !important;
+    text-transform: uppercase !important;
+    font-size: var(--kymera-font-size-xs) !important;
+    letter-spacing: 0.05em !important;
+    border-bottom: 1px solid var(--kymera-border) !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td {
+    background: transparent !important;
+    color: var(--kymera-text-secondary) !important;
+    border-bottom: 1px solid var(--kymera-border-subtle) !important;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner tr:hover td {
+    background: var(--kymera-primary-subtle) !important;
+}
+
+
+/* ============================================================================
+   PROFIT/LOSS STYLING
+   ============================================================================ */
+
+.kymera-profit {
+    color: var(--kymera-success) !important;
+    font-weight: var(--kymera-font-semibold);
+    font-family: var(--kymera-font-mono);
+}
+
+.kymera-loss {
+    color: var(--kymera-danger) !important;
+    font-weight: var(--kymera-font-semibold);
+    font-family: var(--kymera-font-mono);
+}
+
+.kymera-profit-bg {
+    background: var(--kymera-success-bg) !important;
+    border-left: 2px solid var(--kymera-success);
+}
+
+.kymera-loss-bg {
+    background: var(--kymera-danger-bg) !important;
+    border-left: 2px solid var(--kymera-danger);
+}
+
+/* Text utility classes */
+.text-success {
+    color: var(--kymera-success) !important;
+}
+
+.text-danger {
+    color: var(--kymera-danger) !important;
+}
+
+.text-warning {
+    color: var(--kymera-warning) !important;
+}
+
+.text-info {
+    color: var(--kymera-info) !important;
+}
+
+.text-muted {
+    color: var(--kymera-text-muted) !important;
+}
+
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.kymera-button {
+    background: linear-gradient(135deg, var(--kymera-primary) 0%, var(--kymera-secondary) 100%);
+    border: none;
+    border-radius: var(--kymera-radius-md);
+    color: white;
+    font-weight: var(--kymera-font-semibold);
+    padding: var(--kymera-space-sm) var(--kymera-space-lg);
+    cursor: pointer;
+    transition: all var(--kymera-transition-fast);
+    position: relative;
+    overflow: hidden;
+    font-family: var(--kymera-font-primary);
+    font-size: var(--kymera-font-size-base);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.kymera-button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: width var(--kymera-transition-normal), height var(--kymera-transition-normal);
+}
+
+.kymera-button:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.kymera-button:hover {
+    box-shadow: 0 4px 20px var(--kymera-primary-glow);
+    transform: translateY(-1px);
+}
+
+.kymera-button:active {
+    transform: translateY(0);
+}
+
+.kymera-button-secondary {
+    background: var(--kymera-glass-bg);
+    border: 1px solid var(--kymera-border);
+    color: var(--kymera-text-primary);
+}
+
+.kymera-button-secondary:hover {
+    border-color: var(--kymera-primary);
+    box-shadow: 0 4px 20px var(--kymera-primary-glow);
+}
+
+/* Bootstrap button overrides */
+.btn-primary {
+    background: linear-gradient(135deg, var(--kymera-primary) 0%, var(--kymera-secondary) 100%) !important;
+    border: none !important;
+    font-weight: var(--kymera-font-semibold) !important;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 4px 20px var(--kymera-primary-glow) !important;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: var(--kymera-glass-bg) !important;
+    border: 1px solid var(--kymera-border) !important;
+    color: var(--kymera-text-primary) !important;
+}
+
+.btn-secondary:hover {
+    border-color: var(--kymera-primary) !important;
+    box-shadow: 0 4px 20px var(--kymera-primary-glow) !important;
+}
+
+
+/* ============================================================================
+   METRIC CARDS
+   ============================================================================ */
+
+.kymera-metric-card {
+    background: var(--kymera-glass-bg);
+    backdrop-filter: var(--kymera-blur);
+    -webkit-backdrop-filter: var(--kymera-blur);
+    border: 1px solid var(--kymera-border);
+    border-radius: var(--kymera-radius-md);
+    padding: var(--kymera-space-md);
+    text-align: center;
+    transition: all var(--kymera-transition-normal);
+}
+
+.kymera-metric-card:hover {
+    border-color: var(--kymera-primary);
+    box-shadow: var(--kymera-glow-primary);
+}
+
+.kymera-metric-label {
+    color: var(--kymera-text-secondary);
+    font-size: var(--kymera-font-size-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--kymera-space-xs);
+    font-weight: var(--kymera-font-medium);
+}
+
+.kymera-metric-value {
+    font-size: var(--kymera-font-size-3xl);
+    font-weight: var(--kymera-font-bold);
+    font-family: var(--kymera-font-mono);
+    background: linear-gradient(135deg, var(--kymera-primary) 0%, var(--kymera-secondary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.kymera-metric-change {
+    font-size: var(--kymera-font-size-sm);
+    font-family: var(--kymera-font-mono);
+    margin-top: var(--kymera-space-xs);
+}
+
+.kymera-metric-change.positive {
+    color: var(--kymera-success);
+}
+
+.kymera-metric-change.negative {
+    color: var(--kymera-danger);
+}
+
+
+/* ============================================================================
+   CHARTS
+   ============================================================================ */
+
+.kymera-chart-container {
+    background: var(--kymera-card);
+    border-radius: var(--kymera-radius-lg);
+    padding: var(--kymera-space-lg);
+    border: 1px solid var(--kymera-border);
+}
+
+/* Plotly chart overrides */
+.js-plotly-plot .plotly .modebar {
+    background: transparent !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn {
+    color: var(--kymera-text-muted) !important;
+}
+
+.js-plotly-plot .plotly .modebar-btn:hover {
+    background: var(--kymera-primary-subtle) !important;
+    color: var(--kymera-primary) !important;
+}
+
+
+/* ============================================================================
+   BADGES & TAGS
+   ============================================================================ */
+
+.kymera-badge {
+    display: inline-block;
+    padding: var(--kymera-space-xs) var(--kymera-space-sm);
+    border-radius: var(--kymera-radius-sm);
+    font-size: var(--kymera-font-size-xs);
+    font-weight: var(--kymera-font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.kymera-badge-success {
+    background: var(--kymera-success-bg);
+    color: var(--kymera-success);
+    border: 1px solid var(--kymera-success);
+}
+
+.kymera-badge-danger {
+    background: var(--kymera-danger-bg);
+    color: var(--kymera-danger);
+    border: 1px solid var(--kymera-danger);
+}
+
+.kymera-badge-warning {
+    background: var(--kymera-warning-bg);
+    color: var(--kymera-warning);
+    border: 1px solid var(--kymera-warning);
+}
+
+.kymera-badge-info {
+    background: var(--kymera-info-bg);
+    color: var(--kymera-info);
+    border: 1px solid var(--kymera-info);
+}
+
+.kymera-badge-primary {
+    background: var(--kymera-primary-subtle);
+    color: var(--kymera-primary);
+    border: 1px solid var(--kymera-primary);
+}
+
+
+/* ============================================================================
+   INPUTS & FORMS
+   ============================================================================ */
+
+.kymera-input {
+    background: var(--kymera-glass-bg);
+    border: 1px solid var(--kymera-border-subtle);
+    border-radius: var(--kymera-radius-md);
+    color: var(--kymera-text-primary);
+    padding: var(--kymera-space-sm) var(--kymera-space-md);
+    font-family: var(--kymera-font-primary);
+    font-size: var(--kymera-font-size-base);
+    transition: all var(--kymera-transition-fast);
+}
+
+.kymera-input:focus {
+    outline: none;
+    border-color: var(--kymera-primary);
+    box-shadow: 0 0 0 3px var(--kymera-primary-subtle);
+}
+
+.kymera-input::placeholder {
+    color: var(--kymera-text-muted);
+}
+
+/* Bootstrap form overrides */
+.form-control {
+    background: var(--kymera-glass-bg) !important;
+    border: 1px solid var(--kymera-border-subtle) !important;
+    color: var(--kymera-text-primary) !important;
+}
+
+.form-control:focus {
+    background: var(--kymera-glass-bg) !important;
+    border-color: var(--kymera-primary) !important;
+    box-shadow: 0 0 0 3px var(--kymera-primary-subtle) !important;
+    color: var(--kymera-text-primary) !important;
+}
+
+
+/* ============================================================================
+   SCROLLBAR
+   ============================================================================ */
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--kymera-bg-base);
+    border-radius: var(--kymera-radius-sm);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--kymera-primary) 0%, var(--kymera-secondary) 100%);
+    border-radius: var(--kymera-radius-sm);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--kymera-primary-light) 0%, var(--kymera-secondary-light) 100%);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--kymera-primary) var(--kymera-bg-base);
+}
+
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes kymera-pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes kymera-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px var(--kymera-primary-glow);
+    }
+    50% {
+        box-shadow: 0 0 20px var(--kymera-primary-glow), 0 0 30px var(--kymera-secondary-glow);
+    }
+}
+
+@keyframes kymera-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes kymera-slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.kymera-fade-in {
+    animation: kymera-fadeIn var(--kymera-transition-normal) ease-out;
+}
+
+.kymera-slide-in {
+    animation: kymera-slideIn var(--kymera-transition-normal) ease-out;
+}
+
+.kymera-glow-animation {
+    animation: kymera-glow 3s ease-in-out infinite;
+}
+
+
+/* ============================================================================
+   BOOTSTRAP COMPONENT OVERRIDES
+   ============================================================================ */
+
+/* Card overrides */
+.card {
+    background: var(--kymera-glass-bg) !important;
+    backdrop-filter: var(--kymera-blur);
+    -webkit-backdrop-filter: var(--kymera-blur);
+    border: 1px solid var(--kymera-glass-border) !important;
+    border-radius: var(--kymera-radius-lg) !important;
+    box-shadow: var(--kymera-shadow-md) !important;
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid var(--kymera-border-subtle) !important;
+    color: var(--kymera-text-primary) !important;
+}
+
+.card-body {
+    color: var(--kymera-text-secondary) !important;
+}
+
+/* Navbar overrides */
+.navbar {
+    background: var(--kymera-glass-bg) !important;
+    backdrop-filter: var(--kymera-blur);
+    border-bottom: 1px solid var(--kymera-border) !important;
+}
+
+.navbar-dark .navbar-brand,
+.navbar-dark .navbar-text {
+    color: var(--kymera-text-primary) !important;
+}
+
+/* Tab overrides */
+.nav-tabs {
+    border-bottom: 1px solid var(--kymera-border) !important;
+}
+
+.nav-tabs .nav-link {
+    background: transparent !important;
+    border: none !important;
+    color: var(--kymera-text-muted) !important;
+    padding: var(--kymera-space-sm) var(--kymera-space-md) !important;
+    transition: all var(--kymera-transition-fast) !important;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--kymera-primary) !important;
+    border-bottom: 2px solid var(--kymera-primary) !important;
+}
+
+.nav-tabs .nav-link.active {
+    background: var(--kymera-primary-subtle) !important;
+    color: var(--kymera-primary) !important;
+    border-bottom: 2px solid var(--kymera-primary) !important;
+}
+
+
+/* ============================================================================
+   LOADING STATES
+   ============================================================================ */
+
+.kymera-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--kymera-primary-subtle);
+    border-top-color: var(--kymera-primary);
+    border-radius: 50%;
+    animation: kymera-spin 0.8s linear infinite;
+}
+
+@keyframes kymera-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.kymera-skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--kymera-glass-bg) 0%,
+        var(--kymera-primary-subtle) 50%,
+        var(--kymera-glass-bg) 100%
+    );
+    background-size: 200% 100%;
+    animation: kymera-skeleton 1.5s ease-in-out infinite;
+    border-radius: var(--kymera-radius-sm);
+}
+
+@keyframes kymera-skeleton {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+/* Display */
+.kymera-hide { display: none !important; }
+.kymera-show { display: block !important; }
+.kymera-flex { display: flex !important; }
+.kymera-inline-flex { display: inline-flex !important; }
+
+/* Flex utilities */
+.kymera-flex-row { flex-direction: row !important; }
+.kymera-flex-column { flex-direction: column !important; }
+.kymera-flex-center { justify-content: center !important; align-items: center !important; }
+.kymera-flex-between { justify-content: space-between !important; }
+.kymera-flex-around { justify-content: space-around !important; }
+.kymera-flex-wrap { flex-wrap: wrap !important; }
+
+/* Spacing utilities */
+.kymera-m-0 { margin: 0 !important; }
+.kymera-mt-1 { margin-top: var(--kymera-space-sm) !important; }
+.kymera-mb-1 { margin-bottom: var(--kymera-space-sm) !important; }
+.kymera-mt-2 { margin-top: var(--kymera-space-md) !important; }
+.kymera-mb-2 { margin-bottom: var(--kymera-space-md) !important; }
+.kymera-mt-3 { margin-top: var(--kymera-space-lg) !important; }
+.kymera-mb-3 { margin-bottom: var(--kymera-space-lg) !important; }
+
+.kymera-p-0 { padding: 0 !important; }
+.kymera-p-1 { padding: var(--kymera-space-sm) !important; }
+.kymera-p-2 { padding: var(--kymera-space-md) !important; }
+.kymera-p-3 { padding: var(--kymera-space-lg) !important; }
+
+/* Text alignment */
+.kymera-text-left { text-align: left !important; }
+.kymera-text-center { text-align: center !important; }
+.kymera-text-right { text-align: right !important; }
+
+/* Font weights */
+.kymera-font-light { font-weight: var(--kymera-font-light) !important; }
+.kymera-font-normal { font-weight: var(--kymera-font-normal) !important; }
+.kymera-font-medium { font-weight: var(--kymera-font-medium) !important; }
+.kymera-font-semibold { font-weight: var(--kymera-font-semibold) !important; }
+.kymera-font-bold { font-weight: var(--kymera-font-bold) !important; }
+
+/* Main dashboard container */
+.kymera-dashboard {
+    min-height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    :root {
+        --kymera-font-size-base: 0.8125rem;  /* 13px on mobile */
+        --kymera-space-md: 0.75rem;
+        --kymera-space-lg: 1rem;
+    }
+
+    .kymera-logo {
+        font-size: var(--kymera-font-size-xl);
+    }
+
+    .kymera-metric-value {
+        font-size: var(--kymera-font-size-2xl);
+    }
+
+    .kymera-card {
+        padding: var(--kymera-space-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .kymera-brand-prefix {
+        display: none;
+    }
+}
+
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+
+@media print {
+    body {
+        background: white;
+        color: black;
+    }
+
+    .kymera-card,
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+
+    .kymera-navbar,
+    .navbar {
+        display: none;
+    }
+}

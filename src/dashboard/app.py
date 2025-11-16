@@ -43,17 +43,25 @@ from src.regime.regime_detector import regime_detector, RegimeType
 from src.data.historical_manager import historical_manager
 from src.dashboard.components.charts import create_multitimeframe_chart
 from src.dashboard.components.positions import create_positions_panel, update_positions_callback
+from src.dashboard.components.branding import (
+    create_kymera_header,
+    create_metric_card,
+    create_section_header,
+    create_badge
+)
 from src.execution.order_manager import order_manager
 
 
-# Initialize Dash app
+# Initialize Dash app with Kymera theme
+# Note: Kymera theme CSS automatically loaded from assets/ folder
 app = dash.Dash(
     __name__,
-    external_stylesheets=[dbc.themes.BOOTSTRAP],
-    suppress_callback_exceptions=True
+    external_stylesheets=[dbc.themes.CYBORG],  # Dark base theme for Bootstrap components
+    suppress_callback_exceptions=True,
+    assets_folder='assets'  # Loads kymera_theme.css automatically
 )
 
-app.title = "Screener Dashboard"
+app.title = "Desktop Kymera - Trading Dashboard"
 
 # Global state
 watchlist_cache = {
@@ -63,62 +71,99 @@ watchlist_cache = {
 
 
 def create_header():
-    """Create dashboard header."""
-    return dbc.Navbar(
-        dbc.Container([
-            dbc.Row([
-                dbc.Col(html.H3("📊 Screener Dashboard", className="text-white mb-0")),
-                dbc.Col(
-                    html.Div(id='live-clock', className="text-white text-end"),
-                    width="auto"
-                )
-            ], align="center", className="w-100")
-        ]),
-        color="dark",
-        dark=True,
-        className="mb-4"
+    """
+    Create branded Desktop Kymera header.
+
+    Returns:
+    --------
+    dbc.Navbar
+        Kymera-themed navbar with logo, status, and live clock
+
+    Features:
+    ---------
+    - Glass-morphism background with blur
+    - Desktop Kymera branding with gradient
+    - System online status indicator (pulsing green dot)
+    - Live clock updated every second
+    - Sticky positioning (stays visible on scroll)
+    """
+    return create_kymera_header(
+        show_clock=True,
+        show_status=True,
+        system_status="online"
     )
 
 
 def create_regime_card(regime_data: Dict[str, Any]) -> dbc.Card:
-    """Create market regime indicator card."""
+    """
+    Create market regime indicator card with Kymera styling.
+
+    Parameters:
+    -----------
+    regime_data : Dict[str, Any]
+        Regime detection results from regime_detector
+
+    Returns:
+    --------
+    dbc.Card
+        Styled card showing market regime, confidence, and recommendations
+
+    Visual Design:
+    --------------
+    - Glass-morphism card background
+    - Color-coded regime badge
+    - Confidence percentage with monospace font
+    - Strategy recommendations
+    """
     regime_type = regime_data.get('type_str', 'unknown')
     confidence = regime_data.get('confidence', 0)
     recommendation = regime_data.get('recommendation', {})
 
-    # Color based on regime
-    regime_colors = {
+    # Badge variant based on regime
+    regime_badges = {
         'ranging': 'success',
         'trending_bullish': 'info',
         'trending_bearish': 'warning',
         'volatile': 'danger',
-        'unknown': 'secondary'
+        'unknown': 'primary'
     }
-    color = regime_colors.get(regime_type, 'secondary')
+    badge_variant = regime_badges.get(regime_type, 'primary')
 
     return dbc.Card([
         dbc.CardHeader(html.H5("Market Regime", className="mb-0")),
         dbc.CardBody([
-            html.H3(
-                regime_type.replace('_', ' ').title(),
-                className=f"text-{color}"
-            ),
-            html.P(f"Confidence: {confidence:.0%}", className="text-muted mb-2"),
-            html.Hr(),
+            # Regime type with badge
+            html.Div([
+                create_badge(
+                    regime_type.replace('_', ' ').title(),
+                    badge_variant
+                )
+            ], className="mb-3"),
+
+            # Confidence metric
+            html.Div([
+                html.Div("CONFIDENCE", className="kymera-metric-label"),
+                html.Div(f"{confidence:.0%}", className="kymera-metric-value",
+                        style={'fontSize': 'var(--kymera-font-size-2xl)'})
+            ], className="mb-3"),
+
+            html.Hr(style={'borderTop': '1px solid var(--kymera-border-subtle)'}),
+
+            # Recommendations
             html.P([
-                html.Strong("Strategy Fit: "),
-                recommendation.get('strategy_suitability', 'unknown').title()
-            ], className="mb-1"),
+                html.Strong("Strategy Fit: ", className="text-muted"),
+                html.Span(recommendation.get('strategy_suitability', 'unknown').title())
+            ], className="mb-2"),
             html.P([
-                html.Strong("Position Sizing: "),
-                recommendation.get('position_sizing', 'unknown').title()
-            ], className="mb-1"),
+                html.Strong("Position Sizing: ", className="text-muted"),
+                html.Span(recommendation.get('position_sizing', 'unknown').title())
+            ], className="mb-2"),
             html.P(
                 recommendation.get('notes', ''),
                 className="text-muted small"
             )
         ])
-    ], className="mb-4")
+    ], className="mb-4 kymera-card")
 
 
 def create_watchlist_table(watchlist: List) -> dash_table.DataTable:
@@ -193,27 +238,29 @@ def create_watchlist_table(watchlist: List) -> dash_table.DataTable:
     )
 
 
-# Layout
+# Layout with Kymera theme
 app.layout = html.Div([
     create_header(),
 
     dbc.Container([
-        # Control row
+        # Control row with Kymera buttons
         dbc.Row([
             dbc.Col([
                 dbc.Button(
-                    "🔄 Refresh Watchlist",
+                    "Refresh Watchlist",
                     id="refresh-button",
                     color="primary",
-                    className="me-2"
+                    className="me-2 kymera-button"
                 ),
                 dbc.Button(
-                    "⚙️ Settings",
+                    "Settings",
                     id="settings-button",
                     color="secondary",
-                    className="me-2"
+                    className="me-2 kymera-button-secondary"
                 ),
-                html.Span(id="last-update", className="text-muted ms-3")
+                html.Span(id="last-update", className="text-muted ms-3",
+                         style={'fontFamily': 'var(--kymera-font-mono)',
+                                'fontSize': 'var(--kymera-font-size-sm)'})
             ], width=12, className="mb-3")
         ]),
 
@@ -224,7 +271,7 @@ app.layout = html.Div([
             ], width=12)
         ]),
 
-        # Main content row
+        # Main content row with Kymera styling
         dbc.Row([
             # Left column: Regime + Stats
             dbc.Col([
@@ -232,7 +279,7 @@ app.layout = html.Div([
                 dbc.Card([
                     dbc.CardHeader(html.H5("Statistics", className="mb-0")),
                     dbc.CardBody(id='stats-content')
-                ])
+                ], className="kymera-card")
             ], width=3),
 
             # Right column: Watchlist
@@ -240,22 +287,22 @@ app.layout = html.Div([
                 dbc.Card([
                     dbc.CardHeader(html.H5("Watchlist", className="mb-0")),
                     dbc.CardBody(id='watchlist-content')
-                ])
+                ], className="kymera-card")
             ], width=9)
         ]),
 
-        # Charts section
+        # Charts section with Kymera styling
         dbc.Row([
             dbc.Col([
                 dbc.Card([
                     dbc.CardHeader(html.H5("Symbol Analysis", className="mb-0")),
                     dbc.CardBody([
-                        # Timeframe tabs
+                        # Timeframe tabs (Bootstrap tabs auto-styled by CSS)
                         dbc.Tabs([
                             dbc.Tab(label="15 Min", tab_id="15m"),
                             dbc.Tab(label="1 Hour", tab_id="1h"),
                             dbc.Tab(label="4 Hour", tab_id="4h"),
-                        ], id="timeframe-tabs", active_tab="1h"),
+                        ], id="timeframe-tabs", active_tab="1h", className="mb-3"),
 
                         # Symbol input and load button
                         html.Div([
@@ -264,33 +311,36 @@ app.layout = html.Div([
                                 placeholder="Enter symbol (e.g., AAPL)",
                                 type="text",
                                 value="AAPL",
-                                style={"width": "200px", "margin": "10px 0"}
+                                className="kymera-input",
+                                style={"width": "250px"}
                             ),
                             dbc.Button(
                                 "Load Chart",
                                 id="load-chart-btn",
                                 color="primary",
                                 size="sm",
-                                style={"margin-left": "10px"}
+                                className="kymera-button ms-2"
                             )
-                        ], style={"display": "flex", "align-items": "center"}),
+                        ], className="d-flex align-items-center mb-3"),
 
                         # Chart display with loading spinner
                         dcc.Loading(
                             id="chart-loading",
                             type="default",
-                            children=dcc.Graph(
-                                id="symbol-chart",
-                                style={"height": "800px"},
-                                config={
-                                    'displayModeBar': True,
-                                    'displaylogo': False,
-                                    'modeBarButtonsToRemove': ['lasso2d', 'select2d']
-                                }
-                            )
+                            children=html.Div([
+                                dcc.Graph(
+                                    id="symbol-chart",
+                                    style={"height": "800px"},
+                                    config={
+                                        'displayModeBar': True,
+                                        'displaylogo': False,
+                                        'modeBarButtonsToRemove': ['lasso2d', 'select2d']
+                                    }
+                                )
+                            ], className="kymera-chart-container")
                         )
                     ])
-                ], className="mt-3")
+                ], className="mt-3 kymera-card")
             ], width=12)
         ]),
 
@@ -314,7 +364,7 @@ app.layout = html.Div([
             n_intervals=0
         )
     ], fluid=True)
-])
+], className="kymera-dashboard")
 
 
 @app.callback(
