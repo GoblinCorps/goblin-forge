@@ -285,6 +285,33 @@ execution:
     start_at_r: 1.0                 # Start trailing at 1R profit
     trail_distance_pct: 2.0         # Trail 2% below high
 
+# ===== Trailing Stop Configuration =====
+trailing_stops:
+  # Default trailing stop settings
+  default:
+    enabled: false                  # Enable by default for all positions
+    type: percentage                # 'percentage' or 'atr'
+    amount: 2.0                     # 2% or 2x ATR
+    activation_profit_pct: 1.5      # Activate after 1.5% profit
+    min_trail_amount: 0.005         # Minimum 0.5% trail
+
+  # Symbol-specific overrides
+  symbol_overrides:
+    # High volatility stocks - wider trail
+    TSLA:
+      type: atr
+      amount: 3.0
+      activation_profit_pct: 2.0
+
+    # Low volatility stocks - tighter trail
+    KO:
+      type: percentage
+      amount: 1.5
+      activation_profit_pct: 1.0
+
+  # Check frequency
+  check_interval_seconds: 60        # Check every 1 minute
+
   # ===== Time-Based Exits =====
   time_stops:
     max_bars_in_trade: 50           # Exit after 50 bars if not at 1R

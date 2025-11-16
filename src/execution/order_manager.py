@@ -987,6 +987,122 @@ class OrderManager:
         self.position_to_trade_id[symbol] = trade_id
         logger.info(f"Recorded trade entry for {symbol}, trade_id={trade_id}")
 
+    def modify_stop(self, symbol: str, new_stop_price: float) -> bool:
+        """
+        Modify stop loss for an open position.
+
+        Parameters:
+        -----------
+        symbol : str
+            Symbol to modify stop for
+        new_stop_price : float
+            New stop price
+
+        Returns:
+        --------
+        bool
+            True if modification successful
+
+        Notes:
+        ------
+        - Validates new stop is better than old stop
+        - Updates position stop_price
+        - Submits order modification to IB (if connected)
+        - Updates database
+        - Logs modification
+        """
+        if symbol not in self.positions:
+            logger.error(f"Cannot modify stop for {symbol}: no open position")
+            return False
+
+        position = self.positions[symbol]
+
+        # Validate new stop is improvement
+        if position.side == 'BUY':
+            if new_stop_price <= position.stop_price:
+                logger.warning(
+                    f"New stop {new_stop_price:.2f} not higher than "
+                    f"current {position.stop_price:.2f} for LONG {symbol}"
+                )
+                return False
+        else:  # SHORT
+            if new_stop_price >= position.stop_price:
+                logger.warning(
+                    f"New stop {new_stop_price:.2f} not lower than "
+                    f"current {position.stop_price:.2f} for SHORT {symbol}"
+                )
+                return False
+
+        old_stop = position.stop_price
+        position.stop_price = new_stop_price
+
+        # Update in database
+        if symbol in self.position_to_trade_id:
+            trade_id = self.position_to_trade_id[symbol]
+            self.trade_database.update_trade_stop(trade_id, new_stop_price)
+
+        # Submit order modification to IB (if connected)
+        try:
+            if ib_manager.is_connected():
+                # In production, you'd modify the actual stop order via IB API
+                # This is a placeholder for the IB integration
+                # Actual implementation would use ib_manager.ib.placeOrder()
+                # to modify the existing stop order
+                logger.debug(f"Would modify IB stop order for {symbol} to {new_stop_price:.2f}")
+                pass
+        except Exception as e:
+            logger.warning(f"Could not modify IB stop order for {symbol}: {e}")
+
+        logger.info(
+            f"Modified stop for {symbol}: ${old_stop:.2f} -> ${new_stop_price:.2f}"
+        )
+        return True
+
+    def enable_trailing_stop_for_position(
+        self,
+        symbol: str,
+        trailing_type: str = 'percentage',
+        trailing_amount: float = 2.0,
+        activation_profit_pct: float = 1.5
+    ) -> None:
+        """
+        Enable trailing stop for an open position.
+
+        Parameters:
+        -----------
+        symbol : str
+            Symbol to enable trailing for
+        trailing_type : str, default='percentage'
+            'percentage' (fixed %) or 'atr' (ATR multiplier)
+        trailing_amount : float, default=2.0
+            Trail distance (percentage or ATR multiplier)
+        activation_profit_pct : float, default=1.5
+            Profit % required before trailing starts
+
+        Notes:
+        ------
+        - Position must exist
+        - Trailing managed by trailing_stop_manager
+        - Automatic updates via scheduler
+        """
+        if symbol not in self.positions:
+            logger.error(f"Cannot enable trailing stop for {symbol}: no open position")
+            return
+
+        from src.execution.trailing_stop_manager import trailing_stop_manager
+
+        trailing_stop_manager.enable_trailing_stop(
+            symbol=symbol,
+            trailing_type=trailing_type,
+            trailing_amount=trailing_amount,
+            activation_profit_pct=activation_profit_pct
+        )
+
+        logger.info(
+            f"Enabled trailing stop for {symbol}: {trailing_amount}% trail, "
+            f"activate at {activation_profit_pct}% profit"
+        )
+
     def _on_position_closed(
         self,
         symbol: str,

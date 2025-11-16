@@ -837,6 +837,41 @@ class TradeDatabase:
                 f"MAE=${current_mae:.2f}, MFE=${current_mfe:.2f}"
             )
 
+    def update_trade_stop(self, trade_id: int, new_stop_price: float) -> None:
+        """
+        Update stop price for an open trade.
+
+        Used when trailing stops adjust the stop loss.
+
+        Parameters:
+        -----------
+        trade_id : int
+            Trade ID to update
+        new_stop_price : float
+            New stop loss price
+
+        Notes:
+        ------
+        - Only updates stop_price field
+        - Does not validate if trade is open
+        - Used by trailing stop manager
+
+        Examples:
+        ---------
+        >>> trade_database.update_trade_stop(trade_id=123, new_stop_price=149.50)
+        """
+        cursor = self._conn.cursor()
+
+        cursor.execute("""
+            UPDATE trades
+            SET stop_price = ?
+            WHERE id = ?
+        """, (new_stop_price, trade_id))
+
+        self._conn.commit()
+
+        logger.debug(f"Updated stop price for trade_id={trade_id} to ${new_stop_price:.2f}")
+
     def add_trade_note(self, trade_id: int, note: str) -> None:
         """
         Append note to existing trade notes.
