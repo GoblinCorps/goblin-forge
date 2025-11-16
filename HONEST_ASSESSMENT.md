@@ -332,9 +332,19 @@ test_ib_manager_comprehensive.py::test_fetch_historical_bars_metrics_tracking
 
 1. **Start IB Gateway** ✅ CRITICAL
    ```bash
-   # Start IB Gateway on paper trading port
-   # Configure API settings to allow localhost
-   # Enable port 7497 (paper) or 4002
+   # Option 1: Simple Python script (RECOMMENDED)
+   source venv/bin/activate
+   python scripts/start_gateway_simple.py
+   # Will prompt for IB credentials
+   # Starts gateway on port 4002 (paper trading)
+
+   # Option 2: Manual GUI launch
+   # Run IB Gateway from Applications menu
+   # Configure API settings:
+   #   - Enable ActiveX and Socket Clients
+   #   - Socket port: 4002
+   #   - Trusted IP: 127.0.0.1
+   #   - Read-Only API: No
    ```
 
 2. **Verify IB Connection** ✅ CRITICAL
