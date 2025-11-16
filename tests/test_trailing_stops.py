@@ -103,7 +103,7 @@ def mock_historical_manager():
         'volume': np.random.randint(100000, 200000, 100)
     })
 
-    mock.get_bars.return_value = df
+    mock.load_symbol_data.return_value = df
     return mock
 
 
@@ -747,7 +747,7 @@ def test_get_atr_value(fresh_trailing_manager, mock_historical_manager, mock_ind
 
         assert atr is not None
         assert atr == 3.0
-        mock_historical_manager.get_bars.assert_called_once()
+        mock_historical_manager.load_symbol_data.assert_called_once()
         mock_indicator_engine.calculate_atr.assert_called_once()
 
 

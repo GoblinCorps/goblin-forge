@@ -540,7 +540,7 @@ class TrailingStopManager:
             # Validate improvement (skip very small improvements to reduce noise)
             if current_stop > 0:
                 improvement_pct = ((new_stop - current_stop) / current_stop) * 100
-                if improvement_pct < 0.1:  # Less than 0.1% improvement
+                if improvement_pct < 0.01:  # Less than 0.01% improvement (1 basis point)
                     return None
 
         else:  # SELL/SHORT
@@ -554,7 +554,7 @@ class TrailingStopManager:
             # Validate improvement (skip very small improvements to reduce noise)
             if current_stop > 0:
                 improvement_pct = ((current_stop - new_stop) / current_stop) * 100
-                if improvement_pct < 0.1:  # Less than 0.1% improvement
+                if improvement_pct < 0.01:  # Less than 0.01% improvement (1 basis point)
                     return None
 
         return new_stop
@@ -589,11 +589,14 @@ class TrailingStopManager:
             from src.indicators.indicator_engine import indicator_engine
 
             # Get recent bars (need enough for ATR calculation)
-            df = historical_manager.get_bars(
+            df = historical_manager.load_symbol_data(
                 symbol=symbol,
-                timeframe='15 mins',
-                lookback_bars=100
+                timeframe='15 mins'
             )
+
+            # Take last 100 bars if more are available
+            if df is not None and not df.empty and len(df) > 100:
+                df = df.tail(100)
 
             if df is None or df.empty:
                 logger.debug(f"No historical data available for {symbol} ATR calculation")
