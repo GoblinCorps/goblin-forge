@@ -41,6 +41,7 @@ from src.config import config
 from src.screening.watchlist import watchlist_generator
 from src.regime.regime_detector import regime_detector, RegimeType
 from src.data.historical_manager import historical_manager
+from src.dashboard.components.charts import create_multitimeframe_chart
 
 
 # Initialize Dash app
@@ -234,6 +235,56 @@ app.layout = html.Div([
             ], width=9)
         ]),
 
+        # Charts section
+        dbc.Row([
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardHeader(html.H5("Symbol Analysis", className="mb-0")),
+                    dbc.CardBody([
+                        # Timeframe tabs
+                        dbc.Tabs([
+                            dbc.Tab(label="15 Min", tab_id="15m"),
+                            dbc.Tab(label="1 Hour", tab_id="1h"),
+                            dbc.Tab(label="4 Hour", tab_id="4h"),
+                        ], id="timeframe-tabs", active_tab="1h"),
+
+                        # Symbol input and load button
+                        html.Div([
+                            dbc.Input(
+                                id="symbol-input",
+                                placeholder="Enter symbol (e.g., AAPL)",
+                                type="text",
+                                value="AAPL",
+                                style={"width": "200px", "margin": "10px 0"}
+                            ),
+                            dbc.Button(
+                                "Load Chart",
+                                id="load-chart-btn",
+                                color="primary",
+                                size="sm",
+                                style={"margin-left": "10px"}
+                            )
+                        ], style={"display": "flex", "align-items": "center"}),
+
+                        # Chart display with loading spinner
+                        dcc.Loading(
+                            id="chart-loading",
+                            type="default",
+                            children=dcc.Graph(
+                                id="symbol-chart",
+                                style={"height": "800px"},
+                                config={
+                                    'displayModeBar': True,
+                                    'displaylogo': False,
+                                    'modeBarButtonsToRemove': ['lasso2d', 'select2d']
+                                }
+                            )
+                        )
+                    ])
+                ], className="mt-3")
+            ], width=12)
+        ]),
+
         # Hidden interval for auto-refresh
         dcc.Interval(
             id='interval-component',
@@ -314,6 +365,56 @@ def update_dashboard(n_clicks, n_intervals):
         logger.error(f"Error updating dashboard: {e}")
         error_msg = html.Div(f"Error: {str(e)}", className="text-danger")
         return error_msg, error_msg, error_msg, "Error"
+
+
+@app.callback(
+    Output('symbol-chart', 'figure'),
+    [
+        Input('load-chart-btn', 'n_clicks'),
+        Input('timeframe-tabs', 'active_tab')
+    ],
+    [State('symbol-input', 'value')]
+)
+def update_chart(n_clicks, active_tab, symbol):
+    """
+    Update chart when symbol or timeframe changes.
+
+    Parameters:
+    -----------
+    n_clicks : int
+        Number of times load button clicked
+    active_tab : str
+        Active timeframe tab ('15m', '1h', '4h')
+    symbol : str
+        Symbol to chart
+
+    Returns:
+    --------
+    go.Figure
+        Updated Plotly figure
+    """
+    if not symbol:
+        symbol = 'AAPL'  # Default symbol
+
+    # Map tab ID to timeframe
+    timeframe_map = {
+        '15m': '15 mins',
+        '1h': '1 hour',
+        '4h': '4 hours'
+    }
+
+    timeframe = timeframe_map.get(active_tab, '1 hour')
+
+    logger.info(f"Updating chart: {symbol} {timeframe} (n_clicks={n_clicks})")
+
+    try:
+        fig = create_multitimeframe_chart(symbol.upper(), timeframe, bars=100)
+        return fig
+    except Exception as e:
+        logger.error(f"Error creating chart for {symbol} {timeframe}: {e}")
+        # Return empty chart with error
+        from src.dashboard.components.charts import _create_empty_chart
+        return _create_empty_chart(symbol, timeframe, f"Error: {str(e)}")
 
 
 if __name__ == '__main__':
