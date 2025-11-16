@@ -42,6 +42,8 @@ from src.screening.watchlist import watchlist_generator
 from src.regime.regime_detector import regime_detector, RegimeType
 from src.data.historical_manager import historical_manager
 from src.dashboard.components.charts import create_multitimeframe_chart
+from src.dashboard.components.positions import create_positions_panel, update_positions_callback
+from src.execution.order_manager import order_manager
 
 
 # Initialize Dash app
@@ -215,6 +217,13 @@ app.layout = html.Div([
             ], width=12, className="mb-3")
         ]),
 
+        # Positions panel (new)
+        dbc.Row([
+            dbc.Col([
+                create_positions_panel()
+            ], width=12)
+        ]),
+
         # Main content row
         dbc.Row([
             # Left column: Regime + Stats
@@ -285,9 +294,15 @@ app.layout = html.Div([
             ], width=12)
         ]),
 
-        # Hidden interval for auto-refresh
+        # Hidden interval for auto-refresh (5 seconds for positions, 5 minutes for watchlist)
         dcc.Interval(
             id='interval-component',
+            interval=5*1000,  # 5 seconds in milliseconds
+            n_intervals=0
+        ),
+        # Separate interval for watchlist (5 minutes)
+        dcc.Interval(
+            id='watchlist-interval',
             interval=5*60*1000,  # 5 minutes in milliseconds
             n_intervals=0
         ),
@@ -317,7 +332,7 @@ def update_clock(n):
      Output('stats-content', 'children'),
      Output('last-update', 'children')],
     [Input('refresh-button', 'n_clicks'),
-     Input('interval-component', 'n_intervals')]
+     Input('watchlist-interval', 'n_intervals')]
 )
 def update_dashboard(n_clicks, n_intervals):
     """Update dashboard with fresh data."""
@@ -365,6 +380,45 @@ def update_dashboard(n_clicks, n_intervals):
         logger.error(f"Error updating dashboard: {e}")
         error_msg = html.Div(f"Error: {str(e)}", className="text-danger")
         return error_msg, error_msg, error_msg, "Error"
+
+
+@app.callback(
+    [
+        Output('positions-table', 'data'),
+        Output('total-pnl', 'children'),
+        Output('total-pnl', 'className'),
+        Output('unrealized-pnl', 'children'),
+        Output('unrealized-pnl', 'className'),
+        Output('positions-count', 'children'),
+        Output('winning-positions', 'children'),
+        Output('losing-positions', 'children')
+    ],
+    Input('interval-component', 'n_intervals')
+)
+def update_positions(n):
+    """
+    Update positions panel with live P&L data.
+
+    Parameters:
+    -----------
+    n : int
+        Number of intervals (updates every 5 seconds)
+
+    Returns:
+    --------
+    tuple
+        (table_data, total_pnl_text, total_pnl_class, unrealized_text,
+         unrealized_class, positions_count, winning_count, losing_count)
+
+    Features:
+    ---------
+    - Fetches live position data from order_manager
+    - Calculates unrealized P&L from current prices
+    - Color-codes P&L values (green=profit, red=loss)
+    - Updates portfolio summary metrics
+    - Handles empty positions gracefully
+    """
+    return update_positions_callback(n)
 
 
 @app.callback(
