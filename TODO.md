@@ -1,16 +1,27 @@
-# Screener Trading System - TODO
+# ⚠️ ARCHIVED: Screener Trading System - TODO
 
-**Last Updated**: 2025-11-16 (ALL CODE FIXES COMPLETE - R1 Compliance)
-**Status**: ✅ **97% COMPLETE - IB GATEWAY REQUIRED FOR TRADING**
-**Progress**: Core phases 1-4 complete (100%), remaining phases optional
-**Version**: v0.5.0
-**Tests**: 662 total (639 passing - **96.5%**), 4 skipped, 19 failing (18 IB Gateway + 1 other)
-**Average Coverage**: 93.75% (excellent on implemented code)
+**Date**: 2025-11-16
+**Status**: **ARCHIVED - Migrated to icli-scanner**
+**Reason**: Over-engineered (26,000 lines for simple stock scanning)
+**Final Version**: v0.5.0
+**Final Tests**: 662 total (639 passing - **96.5%**), 4 skipped, 19 failing (18 IB Gateway)
+**Average Coverage**: 93.75%
 **Code**: 12,849 lines production (32 modules), 13,258 lines tests (18 files)
-**Latest**: All 7 code test failures FIXED (threshold bugs + ATR mocking + Stochastic RSI range)
-**Blockers**: IB Gateway not running (18 tests fail without it)
 
-**See**: `HONEST_ASSESSMENT.md` for complete truthful status (R1 compliance)
+---
+
+## Migration Notice
+
+This complex screener has been **replaced** with a minimal 450-line icli extension.
+
+**New System**: `/home/aaron/github/astoreyai/icli-scanner`
+**Reduction**: 98.3% (26,000 → 450 lines)
+
+**See**: `MIGRATION.md` for complete migration details
+
+---
+
+## Final Status (Archive)
 
 ---
 

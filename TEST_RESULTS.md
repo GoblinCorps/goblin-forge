@@ -1,10 +1,23 @@
-# Screener Trading System - Test Results
+# ⚠️ ARCHIVED: Screener Trading System - Test Results
 
 **Date**: 2025-11-16
-**Version**: v0.5.0 (Option 2 Complete)
+**Status**: **ARCHIVED - Migrated to icli-scanner**
+**Version**: v0.5.0 (Final - Option 2 Complete)
 **Test Framework**: pytest 9.0.1
 **Python**: 3.11.2
 **Total Tests**: 662
+
+---
+
+## Archive Notice
+
+This test report documents the final state of a 26,000-line system that has been **replaced** with a minimal 450-line icli extension (98% reduction).
+
+**Migration**: See `MIGRATION.md`
+**New System**: `/home/aaron/github/astoreyai/icli-scanner`
+**Reason**: Over-engineering - full trading platform built when only simple scanning was needed
+
+---
 
 ---
 

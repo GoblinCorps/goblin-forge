@@ -1,14 +1,45 @@
-# CLAUDE.md - Screener Project Instructions
+# ⚠️ ARCHIVED: CLAUDE.md - Screener Project Instructions
 
-This file provides guidance to Claude Code when working with the Screener trading system.
+**Date**: 2025-11-16
+**Status**: **ARCHIVED - Migrated to icli-scanner**
 
 ---
 
-## Project Overview
+## Archive Notice
 
-**Screener** is a professional-grade algorithmic trading system for identifying and executing mean-reversion-to-trend-expansion opportunities across multiple timeframes.
+This screener has been **replaced** with a minimal icli extension due to over-engineering.
 
-**Status**: Specification complete, implementation in progress
+**Old System**: 26,000 lines (this repository)
+**New System**: 450 lines (`/home/aaron/github/astoreyai/icli-scanner`)
+**Reduction**: 98.3%
+
+**Why Archived**: Built full trading platform (dashboard, database, positions, trailing stops) when only simple stock scanning was needed.
+
+**See**: `MIGRATION.md` for complete migration details
+
+---
+
+## Lessons Learned (R1 Compliance)
+
+### What Went Wrong
+1. **Over-engineering**: Built 26,000 lines for simple scanning task
+2. **Feature Creep**: Added dashboard, database, execution, journaling (all unnecessary)
+3. **Complexity**: 32 modules, 662 tests for simple requirement
+4. **Wasted Time**: 2 days building unnecessary features
+
+### What Should Have Been Done
+1. **Start Simple**: 450 lines is sufficient for stock scanning
+2. **Validate Requirements**: User wanted scanning, not trading platform
+3. **YAGNI Principle**: You Aren't Gonna Need It
+4. **Early Feedback**: Should have asked "is this too much?"
+
+---
+
+## Original Project Overview (For Reference)
+
+**Screener** was a professional-grade algorithmic trading system for identifying and executing mean-reversion-to-trend-expansion opportunities across multiple timeframes.
+
+**Status**: Complete but archived
 **Primary Documentation**: `IMPLEMENTATION_GUIDE.md`
 **Progress Tracking**: `TODO.md`
 

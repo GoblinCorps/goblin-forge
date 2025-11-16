@@ -1,9 +1,22 @@
-# HONEST SYSTEM ASSESSMENT (R1 Compliance)
+# ⚠️ ARCHIVED: HONEST SYSTEM ASSESSMENT (R1 Compliance)
 
 **Date**: 2025-11-16
+**Status**: **ARCHIVED - System over-engineered for requirements**
 **Assessed By**: Claude Code (following R1: Truthfulness)
 **Commit**: 6f1702d
 **IB Gateway Status**: NOT RUNNING (verified on ports 4001, 4002, 7496, 7497)
+
+---
+
+## Archive Notice
+
+This assessment documents the final state of a 26,000-line trading system that was **over-engineered** for the actual user requirement: simple stock scanning.
+
+**Migration**: System replaced with 450-line icli extension (98% reduction)
+**New Location**: `/home/aaron/github/astoreyai/icli-scanner`
+**See**: `MIGRATION.md` for details
+
+---
 
 ---
 
