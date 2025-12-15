@@ -48,6 +48,11 @@ designed to coordinate and execute multiple coding-focused CLI agents in paralle
 		newSpawnCmd(),
 		newListCmd(),
 		newStopCmd(),
+		newKillCmd(),
+		newAttachCmd(),
+		newLogsCmd(),
+		newDiffCmd(),
+		newTaskCmd(),
 		newStatusCmd(),
 	)
 
@@ -214,6 +219,100 @@ func newStopCmd() *cobra.Command {
 			return stopGoblin(args[0])
 		},
 	}
+}
+
+// === Kill Command ===
+
+func newKillCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "kill <name>",
+		Short: "Kill a goblin and cleanup its resources",
+		Long:  `Forcefully terminate a goblin, remove its tmux session and optionally its worktree.`,
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return killGoblin(args[0])
+		},
+	}
+}
+
+// === Attach Command ===
+
+func newAttachCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:     "attach <name>",
+		Aliases: []string{"a"},
+		Short:   "Attach to a goblin's tmux session",
+		Long: `Attach to a running goblin's tmux session.
+Use Ctrl+B D to detach and return to gforge.`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return attachGoblin(args[0])
+		},
+	}
+}
+
+// === Logs Command ===
+
+func newLogsCmd() *cobra.Command {
+	var (
+		lines int
+		follow bool
+	)
+
+	cmd := &cobra.Command{
+		Use:   "logs <name>",
+		Short: "View goblin output logs",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return showLogs(args[0], lines, follow)
+		},
+	}
+
+	cmd.Flags().IntVarP(&lines, "lines", "n", 50, "Number of lines to show")
+	cmd.Flags().BoolVarP(&follow, "follow", "f", false, "Follow log output")
+
+	return cmd
+}
+
+// === Diff Command ===
+
+func newDiffCmd() *cobra.Command {
+	var staged bool
+
+	cmd := &cobra.Command{
+		Use:   "diff <name>",
+		Short: "Show changes made by a goblin",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return showDiff(args[0], staged)
+		},
+	}
+
+	cmd.Flags().BoolVarP(&staged, "staged", "s", false, "Show staged changes only")
+
+	return cmd
+}
+
+// === Task Command ===
+
+func newTaskCmd() *cobra.Command {
+	var goblin string
+
+	cmd := &cobra.Command{
+		Use:   "task <description>",
+		Short: "Send a task to a goblin",
+		Long: `Send a task description to a running goblin.
+The task will be typed into the goblin's terminal session.`,
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return sendTask(args[0], goblin)
+		},
+	}
+
+	cmd.Flags().StringVarP(&goblin, "goblin", "g", "", "Target goblin name (required)")
+	cmd.MarkFlagRequired("goblin")
+
+	return cmd
 }
 
 // === Status Command ===

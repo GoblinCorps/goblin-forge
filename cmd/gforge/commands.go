@@ -4,10 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/astoreyai/goblin-forge/internal/agents"
 	"github.com/astoreyai/goblin-forge/internal/coordinator"
+	"github.com/astoreyai/goblin-forge/internal/tmux"
+	"github.com/astoreyai/goblin-forge/internal/workspace"
 )
 
 // listAgents displays all available agent definitions
@@ -211,3 +215,192 @@ func showStatus() error {
 
 	return nil
 }
+
+// killGoblin forcefully terminates a goblin and cleans up resources
+func killGoblin(name string) error {
+	coord := coordinator.New(db, cfg, log)
+
+	if err := coord.Kill(name); err != nil {
+		return fmt.Errorf("failed to kill goblin: %w", err)
+	}
+
+	fmt.Printf("Killed goblin: %s\n", name)
+	fmt.Println("  tmux session terminated")
+	fmt.Println("  worktree removed")
+	return nil
+}
+
+// attachGoblin attaches to a goblin's tmux session
+func attachGoblin(name string) error {
+	coord := coordinator.New(db, cfg, log)
+
+	goblin, err := coord.Get(name)
+	if err != nil {
+		return fmt.Errorf("failed to get goblin: %w", err)
+	}
+	if goblin == nil {
+		return fmt.Errorf("goblin not found: %s", name)
+	}
+
+	fmt.Printf("Attaching to goblin: %s\n", name)
+	fmt.Println("Use Ctrl+B D to detach")
+	fmt.Println()
+
+	// Small delay for user to read
+	time.Sleep(500 * time.Millisecond)
+
+	return coord.Attach(name)
+}
+
+// showLogs displays goblin output logs
+func showLogs(name string, lines int, follow bool) error {
+	coord := coordinator.New(db, cfg, log)
+
+	goblin, err := coord.Get(name)
+	if err != nil {
+		return fmt.Errorf("failed to get goblin: %w", err)
+	}
+	if goblin == nil {
+		return fmt.Errorf("goblin not found: %s", name)
+	}
+
+	// Create tmux manager to get output
+	tmuxMgr := tmux.NewManager(tmux.Config{
+		SocketName: cfg.Tmux.SocketName,
+	})
+
+	if follow {
+		// Follow mode - continuously capture pane
+		fmt.Printf("Following logs for %s (Ctrl+C to stop)...\n\n", name)
+		lastOutput := ""
+		for {
+			output, err := tmuxMgr.CapturePane(goblin.TmuxSession, lines)
+			if err != nil {
+				return fmt.Errorf("failed to capture output: %w", err)
+			}
+
+			// Only print new content
+			if output != lastOutput {
+				// Clear screen and print
+				fmt.Print("\033[2J\033[H") // Clear screen, move to top
+				fmt.Printf("=== Logs: %s ===\n\n", name)
+				fmt.Println(output)
+				lastOutput = output
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		}
+	} else {
+		// One-shot capture
+		output, err := tmuxMgr.CapturePane(goblin.TmuxSession, lines)
+		if err != nil {
+			return fmt.Errorf("failed to capture output: %w", err)
+		}
+
+		fmt.Printf("=== Logs: %s (last %d lines) ===\n\n", name, lines)
+		fmt.Println(output)
+	}
+
+	return nil
+}
+
+// showDiff displays changes made by a goblin
+func showDiff(name string, staged bool) error {
+	coord := coordinator.New(db, cfg, log)
+
+	goblin, err := coord.Get(name)
+	if err != nil {
+		return fmt.Errorf("failed to get goblin: %w", err)
+	}
+	if goblin == nil {
+		return fmt.Errorf("goblin not found: %s", name)
+	}
+
+	// Create workspace manager
+	wsMgr := workspace.NewWorktreeManager(workspace.Config{
+		BasePath: cfg.WorktreeBase,
+	})
+
+	// Get changed files
+	changes, err := wsMgr.GetChanges(goblin.WorktreePath)
+	if err != nil {
+		return fmt.Errorf("failed to get changes: %w", err)
+	}
+
+	if len(changes) == 0 {
+		fmt.Printf("No changes in %s\n", name)
+		return nil
+	}
+
+	fmt.Printf("=== Changes in %s (%d files) ===\n\n", name, len(changes))
+
+	// Show file list
+	fmt.Println("Changed files:")
+	for _, f := range changes {
+		fmt.Printf("  %s\n", f)
+	}
+	fmt.Println()
+
+	// Show diff
+	diff, err := wsMgr.GetDiff(goblin.WorktreePath, staged)
+	if err != nil {
+		return fmt.Errorf("failed to get diff: %w", err)
+	}
+
+	if diff == "" {
+		if staged {
+			fmt.Println("No staged changes.")
+		} else {
+			fmt.Println("No unstaged changes (files may be staged).")
+		}
+		return nil
+	}
+
+	// Colorize diff output
+	lines := strings.Split(diff, "\n")
+	for _, line := range lines {
+		if strings.HasPrefix(line, "+") && !strings.HasPrefix(line, "+++") {
+			fmt.Printf("\033[32m%s\033[0m\n", line) // Green
+		} else if strings.HasPrefix(line, "-") && !strings.HasPrefix(line, "---") {
+			fmt.Printf("\033[31m%s\033[0m\n", line) // Red
+		} else if strings.HasPrefix(line, "@@") {
+			fmt.Printf("\033[36m%s\033[0m\n", line) // Cyan
+		} else if strings.HasPrefix(line, "diff") || strings.HasPrefix(line, "index") {
+			fmt.Printf("\033[1m%s\033[0m\n", line) // Bold
+		} else {
+			fmt.Println(line)
+		}
+	}
+
+	return nil
+}
+
+// sendTask sends a task to a goblin
+func sendTask(task, goblinName string) error {
+	coord := coordinator.New(db, cfg, log)
+
+	goblin, err := coord.Get(goblinName)
+	if err != nil {
+		return fmt.Errorf("failed to get goblin: %w", err)
+	}
+	if goblin == nil {
+		return fmt.Errorf("goblin not found: %s", goblinName)
+	}
+
+	if err := coord.SendTask(goblinName, task); err != nil {
+		return fmt.Errorf("failed to send task: %w", err)
+	}
+
+	fmt.Printf("Task sent to %s:\n", goblinName)
+	fmt.Printf("  \"%s\"\n", task)
+
+	return nil
+}
+
+// Suppress unused import warnings during development
+var (
+	_ = time.Now
+	_ = strings.TrimSpace
+	_ = tmux.NewManager
+	_ = workspace.NewWorktreeManager
+)
