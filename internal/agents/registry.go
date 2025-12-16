@@ -191,6 +191,48 @@ func (r *Registry) registerBuiltinAgents() {
 		InstallHint: "Install ollama, then: ollama pull qwen2.5-coder:7b",
 		AutoAccept:  false,
 	}
+
+	// Charmbracelet Crush - TUI AI coding assistant
+	r.agents["crush"] = &Agent{
+		Name:        "crush",
+		Command:     "crush",
+		Args:        []string{},
+		Description: "Charmbracelet Crush - TUI AI coding assistant with LSP support",
+		Capabilities: []string{
+			"code",     // Code generation and editing
+			"git",      // Git operations
+			"fs",       // Filesystem operations
+			"web",      // Web fetching
+			"mcp",      // Model Context Protocol
+			"terminal", // Terminal commands
+			"lsp",      // Language Server Protocol integration
+		},
+		Detection: Detection{
+			Binary:      "crush",
+			VersionCmd:  "crush",
+			VersionArgs: []string{"--version"},
+		},
+		InstallHint: "Install via: brew install charmbracelet/tap/crush",
+		AutoAccept:  false,
+	}
+
+	// Crush with --yolo mode (auto-accept all tool calls)
+	r.agents["crush-yolo"] = &Agent{
+		Name:        "crush-yolo",
+		Command:     "crush",
+		Args:        []string{"--yolo"},
+		Description: "Crush with auto-accept mode (use with caution)",
+		Capabilities: []string{
+			"code", "git", "fs", "web", "mcp", "terminal", "lsp",
+		},
+		Detection: Detection{
+			Binary:      "crush",
+			VersionCmd:  "crush",
+			VersionArgs: []string{"--version"},
+		},
+		InstallHint: "Same as crush - uses --yolo flag for auto-accept",
+		AutoAccept:  true,
+	}
 }
 
 // Get retrieves an agent by name
@@ -276,6 +318,9 @@ func (r *Registry) NotInstalled(detected []DetectedAgent) []string {
 		// Also mark variants as installed if base is installed
 		if d.Name == "claude" {
 			installed["claude-auto"] = true
+		}
+		if d.Name == "crush" {
+			installed["crush-yolo"] = true
 		}
 		if d.Name == "ollama" {
 			installed["ollama-deepseek"] = true
