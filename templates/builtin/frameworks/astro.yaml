@@ -1,0 +1,28 @@
+name: astro
+description: Astro static site framework
+category: frameworks
+extends: nodejs
+priority: 110
+
+detect:
+  content:
+    - file: package.json
+      pattern: '"astro"'
+
+commands:
+  dev: "{{.package_manager}} run dev"
+  build: "{{.package_manager}} run build"
+  preview: "{{.package_manager}} run preview"
+
+ports:
+  - 4321
+
+agent_context: |
+  This is an Astro project - a content-focused static site framework.
+  Key conventions:
+  - Pages in src/pages/ directory
+  - Components in src/components/
+  - Layouts in src/layouts/
+  - Content collections in src/content/
+  - Islands architecture for partial hydration
+  - Supports React, Vue, Svelte components

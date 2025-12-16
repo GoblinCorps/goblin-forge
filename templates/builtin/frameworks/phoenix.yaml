@@ -1,0 +1,30 @@
+name: phoenix
+description: Phoenix Elixir web framework
+category: frameworks
+extends: elixir
+priority: 110
+
+detect:
+  content:
+    - file: mix.exs
+      pattern: phoenix
+
+commands:
+  dev: mix phx.server
+  routes: mix phx.routes
+  migrate: mix ecto.migrate
+  rollback: mix ecto.rollback
+  test: mix test
+  iex: iex -S mix phx.server
+
+ports:
+  - 4000
+
+agent_context: |
+  This is a Phoenix project - an Elixir web framework for productive development.
+  Key features:
+  - LiveView for real-time UI without JavaScript
+  - Ecto for database access and migrations
+  - Channels for WebSocket communication
+  - Contexts for organizing business logic
+  - Router with pipelines and scopes

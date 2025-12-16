@@ -1,0 +1,25 @@
+name: c-cpp
+description: C/C++ project
+category: languages
+priority: 40
+
+detect:
+  files:
+    - CMakeLists.txt
+    - Makefile
+    - meson.build
+
+commands:
+  build-cmake: cmake -B build && cmake --build build
+  build-make: make
+  clean-cmake: rm -rf build
+  clean-make: make clean
+  test: ctest --test-dir build
+
+agent_context: |
+  This is a C/C++ project.
+  Build systems detected:
+  - CMake: Modern, cross-platform build system
+  - Make: Traditional Unix build tool
+  - Meson: Fast, user-friendly build system
+  Use appropriate build commands based on configuration.

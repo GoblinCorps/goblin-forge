@@ -11,6 +11,7 @@ require (
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/google/uuid v1.6.0
 	modernc.org/sqlite v1.34.1
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (

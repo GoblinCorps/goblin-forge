@@ -1,0 +1,17 @@
+name: go-test
+description: Go test task
+category: build
+priority: 30
+
+commands:
+  test: go test ./...
+  test-verbose: go test -v ./...
+  test-cover: go test -cover ./...
+  test-race: go test -race ./...
+
+agent_context: |
+  This task runs go tests. Ensure:
+  - All tests pass
+  - Check for race conditions with -race
+  - Review coverage report
+  - Test files are named *_test.go

@@ -1,0 +1,30 @@
+name: gin
+description: Gin Go web framework
+category: frameworks
+extends: golang
+priority: 110
+
+detect:
+  content:
+    - file: go.mod
+      pattern: github.com/gin-gonic/gin
+
+variables:
+  framework: gin
+
+commands:
+  dev: go run .
+  build: go build -o server .
+  test: go test ./...
+
+ports:
+  - 8080
+
+agent_context: |
+  This is a Gin project - a fast Go HTTP web framework.
+  Key features:
+  - Router with path parameters and groups
+  - Middleware support for logging, recovery, auth
+  - JSON binding and validation
+  - Use gin.Context for request/response handling
+  - Prefer gin.H for JSON responses

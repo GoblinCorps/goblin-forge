@@ -1,0 +1,30 @@
+name: rails
+description: Ruby on Rails web framework
+category: frameworks
+extends: ruby
+priority: 110
+
+detect:
+  content:
+    - file: Gemfile
+      pattern: rails
+
+commands:
+  dev: bin/rails server
+  console: bin/rails console
+  migrate: bin/rails db:migrate
+  test: bin/rails test
+  routes: bin/rails routes
+  generate: bin/rails generate
+
+ports:
+  - 3000
+
+agent_context: |
+  This is a Ruby on Rails project - a full-stack web framework.
+  Key conventions:
+  - MVC architecture with app/models, app/views, app/controllers
+  - RESTful routes in config/routes.rb
+  - ActiveRecord for database access
+  - Migrations in db/migrate/
+  - Follow Rails conventions for file naming and structure

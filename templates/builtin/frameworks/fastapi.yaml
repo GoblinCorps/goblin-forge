@@ -1,0 +1,32 @@
+name: fastapi
+description: FastAPI Python web framework
+category: frameworks
+extends: python
+priority: 110
+
+detect:
+  content:
+    - file: pyproject.toml
+      pattern: fastapi
+    - file: requirements.txt
+      pattern: fastapi
+
+variables:
+  framework: fastapi
+
+commands:
+  dev: uvicorn main:app --reload
+  start: uvicorn main:app --host 0.0.0.0 --port 8000
+  test: pytest
+
+ports:
+  - 8000
+
+agent_context: |
+  This is a FastAPI project - a modern Python web framework.
+  Key features:
+  - Automatic OpenAPI docs at /docs and /redoc
+  - Type hints for request/response validation
+  - Async support with async/await
+  - Use Pydantic models for data validation
+  - Dependency injection system

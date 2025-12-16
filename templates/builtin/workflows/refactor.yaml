@@ -1,0 +1,35 @@
+name: refactor
+description: Code refactoring workflow
+category: workflows
+priority: 50
+
+agent_context: |
+  This goblin is refactoring code. Follow these principles:
+
+  1. Preparation
+     - Ensure tests exist before refactoring
+     - Understand the current behavior
+     - Identify code smells
+
+  2. Common Refactoring Patterns
+     - Extract Method/Function
+     - Rename for clarity
+     - Remove duplication
+     - Simplify conditionals
+     - Replace magic numbers with constants
+
+  3. Process
+     - Make small, incremental changes
+     - Run tests after each change
+     - Commit working states frequently
+     - Don't change behavior, only structure
+
+  4. Code Smells to Address
+     - Long methods (>20 lines)
+     - Deep nesting (>3 levels)
+     - Duplicate code
+     - Large classes
+     - Feature envy
+     - Data clumps
+
+  Preserve all existing functionality. Tests must pass after each change.

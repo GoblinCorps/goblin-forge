@@ -1,0 +1,32 @@
+name: rust
+description: Rust project with Cargo
+category: languages
+priority: 50
+
+detect:
+  files:
+    - Cargo.toml
+
+variables:
+  cargo: cargo
+
+setup:
+  - name: Check toolchain
+    command: rustup show
+    on_fail: warn
+
+commands:
+  build: cargo build
+  build-release: cargo build --release
+  run: cargo run
+  test: cargo test
+  check: cargo check
+  clippy: cargo clippy -- -D warnings
+  fmt: cargo fmt
+  doc: cargo doc --open
+
+agent_context: |
+  This is a Rust project using Cargo for build and dependency management.
+  Follow Rust idioms: prefer ownership over borrowing when possible,
+  use Result for error handling, and run clippy for linting.
+  The project structure follows standard Rust conventions.

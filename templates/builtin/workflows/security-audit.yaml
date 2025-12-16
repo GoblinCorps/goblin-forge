@@ -1,0 +1,38 @@
+name: security-audit
+description: Security audit workflow
+category: workflows
+priority: 50
+
+agent_context: |
+  This goblin is performing a security audit. Focus on:
+
+  1. Input Validation
+     - SQL injection vulnerabilities
+     - XSS (Cross-Site Scripting)
+     - Command injection
+     - Path traversal
+
+  2. Authentication & Authorization
+     - Session management issues
+     - Weak password policies
+     - Missing access controls
+     - Token handling
+
+  3. Sensitive Data
+     - Hardcoded credentials
+     - API keys in code
+     - Unencrypted sensitive data
+     - Logging of sensitive information
+
+  4. Dependencies
+     - Known vulnerable packages
+     - Outdated dependencies
+     - License compliance
+
+  5. Configuration
+     - Debug mode in production
+     - Exposed admin interfaces
+     - Insecure defaults
+
+  Report findings with severity levels (Critical, High, Medium, Low).
+  Provide remediation steps for each issue.

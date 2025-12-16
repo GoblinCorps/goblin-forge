@@ -1,0 +1,32 @@
+name: python-uv
+description: Python project with uv package manager
+category: languages
+extends: python
+priority: 100
+
+detect:
+  files:
+    - uv.lock
+
+variables:
+  pip: uv pip
+
+setup:
+  - name: Sync dependencies
+    command: uv sync
+    on_fail: error
+
+commands:
+  install: uv sync
+  add: uv add
+  remove: uv remove
+  run: uv run
+  test: uv run pytest
+  lint: uv run ruff check .
+  format: uv run ruff format .
+
+agent_context: |
+  This is a Python project using uv as the package manager.
+  uv is a fast Python package installer and resolver written in Rust.
+  Use 'uv add' to add dependencies and 'uv sync' to install.
+  Use 'uv run' to run commands in the virtual environment.

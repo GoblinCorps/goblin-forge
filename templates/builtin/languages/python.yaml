@@ -1,0 +1,35 @@
+name: python
+description: Python project
+category: languages
+priority: 50
+
+detect:
+  files:
+    - pyproject.toml
+    - requirements.txt
+    - setup.py
+
+variables:
+  python: python3
+  pip: pip
+
+setup:
+  - name: Create virtual environment
+    command: "{{.python}} -m venv .venv"
+    on_fail: warn
+  - name: Install dependencies
+    command: ".venv/bin/pip install -r requirements.txt"
+    on_fail: skip
+
+commands:
+  install: "{{.pip}} install -r requirements.txt"
+  install-dev: "{{.pip}} install -e '.[dev]'"
+  test: pytest
+  lint: ruff check .
+  format: ruff format .
+  typecheck: mypy .
+
+agent_context: |
+  This is a Python project. Use virtual environments for isolation.
+  Follow PEP 8 style guidelines and use type hints where possible.
+  Prefer pytest for testing and ruff for linting/formatting.

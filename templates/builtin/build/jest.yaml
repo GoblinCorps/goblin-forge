@@ -1,0 +1,17 @@
+name: jest
+description: Jest test task
+category: build
+priority: 30
+
+commands:
+  test: jest
+  test-watch: jest --watch
+  test-coverage: jest --coverage
+  test-update: jest -u
+
+agent_context: |
+  This task runs Jest tests. Ensure:
+  - All tests pass
+  - Snapshots are up to date
+  - Coverage meets requirements
+  - Mock external dependencies

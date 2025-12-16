@@ -1,0 +1,16 @@
+name: npm-test
+description: npm test task
+category: build
+priority: 30
+
+commands:
+  test: npm test
+  test-watch: npm test -- --watch
+  test-coverage: npm test -- --coverage
+
+agent_context: |
+  This task runs npm tests. Ensure:
+  - All tests pass before committing
+  - Check test coverage
+  - Fix failing tests before proceeding
+  - Add tests for new functionality

@@ -1,0 +1,32 @@
+name: pr-review
+description: Pull request code review workflow
+category: workflows
+priority: 50
+
+agent_context: |
+  This goblin is reviewing a pull request. Focus on:
+
+  1. Code Quality
+     - Check for bugs and logic errors
+     - Verify error handling
+     - Look for security vulnerabilities
+     - Assess test coverage
+
+  2. Best Practices
+     - Follow project coding standards
+     - Check for code duplication
+     - Verify proper naming conventions
+     - Assess documentation
+
+  3. Architecture
+     - Evaluate design decisions
+     - Check for proper abstraction
+     - Verify separation of concerns
+
+  4. Performance
+     - Identify potential bottlenecks
+     - Check for unnecessary computations
+     - Verify efficient data structures
+
+  Provide specific, actionable feedback with code examples.
+  Be constructive and explain the reasoning behind suggestions.

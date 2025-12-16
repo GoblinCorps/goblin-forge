@@ -1,0 +1,32 @@
+name: nextjs
+description: Next.js React framework
+category: frameworks
+extends: nodejs
+priority: 110
+
+detect:
+  content:
+    - file: package.json
+      pattern: '"next"'
+
+variables:
+  framework: nextjs
+
+commands:
+  dev: "{{.package_manager}} run dev"
+  build: "{{.package_manager}} run build"
+  start: "{{.package_manager}} start"
+  lint: "{{.package_manager}} run lint"
+
+ports:
+  - 3000
+
+agent_context: |
+  This is a Next.js project - a React framework with server-side rendering.
+  Key conventions:
+  - App Router: pages in app/ directory with page.tsx files
+  - Pages Router: pages in pages/ directory
+  - API routes in app/api/ or pages/api/
+  - Server Components by default in App Router
+  - Use 'use client' directive for client components
+  - Prefer server actions for mutations

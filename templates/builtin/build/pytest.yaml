@@ -1,0 +1,18 @@
+name: pytest
+description: pytest test task
+category: build
+priority: 30
+
+commands:
+  test: pytest
+  test-verbose: pytest -v
+  test-coverage: pytest --cov=. --cov-report=html
+  test-watch: ptw
+
+agent_context: |
+  This task runs pytest tests. Ensure:
+  - Virtual environment is activated
+  - All tests pass
+  - Check coverage report
+  - Use fixtures for test setup
+  - Follow pytest conventions for test naming

@@ -1,0 +1,30 @@
+name: flask
+description: Flask Python web framework
+category: frameworks
+extends: python
+priority: 105
+
+detect:
+  content:
+    - file: pyproject.toml
+      pattern: flask
+    - file: requirements.txt
+      pattern: flask
+
+commands:
+  dev: flask run --debug
+  run: flask run
+  test: pytest
+  shell: flask shell
+
+ports:
+  - 5000
+
+agent_context: |
+  This is a Flask project - a lightweight Python web framework.
+  Key conventions:
+  - Routes defined with @app.route decorator
+  - Templates in templates/ directory (Jinja2)
+  - Static files in static/ directory
+  - Use Flask-SQLAlchemy for database access
+  - Blueprints for modular applications

@@ -1,0 +1,20 @@
+name: elixir
+description: Elixir project with Mix
+category: languages
+priority: 50
+
+detect:
+  files:
+    - mix.exs
+
+commands:
+  deps: mix deps.get
+  compile: mix compile
+  test: mix test
+  format: mix format
+  iex: iex -S mix
+
+agent_context: |
+  This is an Elixir project using Mix for build and dependency management.
+  Elixir runs on the Erlang VM (BEAM) with excellent concurrency support.
+  Use pattern matching, immutable data, and the pipe operator.

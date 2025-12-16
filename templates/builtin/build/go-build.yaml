@@ -1,0 +1,16 @@
+name: go-build
+description: Go build task
+category: build
+priority: 30
+
+commands:
+  build: go build ./...
+  build-binary: go build -o bin/app .
+  install: go install
+
+agent_context: |
+  This task runs go build. Ensure:
+  - Code compiles without errors
+  - Run go vet for static analysis
+  - Use go mod tidy to clean dependencies
+  - Binary output goes to bin/ directory

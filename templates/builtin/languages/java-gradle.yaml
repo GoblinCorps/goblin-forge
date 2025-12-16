@@ -1,0 +1,24 @@
+name: java-gradle
+description: Java project with Gradle
+category: languages
+priority: 60
+
+detect:
+  files:
+    - build.gradle
+    - build.gradle.kts
+
+commands:
+  build: ./gradlew build
+  test: ./gradlew test
+  run: ./gradlew run
+  clean: ./gradlew clean
+  deps: ./gradlew dependencies
+
+agent_context: |
+  This is a Java project using Gradle for build management.
+  Key conventions:
+  - build.gradle or build.gradle.kts for configuration
+  - Use Gradle wrapper (./gradlew) for consistent builds
+  - Source in src/main/java, tests in src/test/java
+  - Kotlin DSL (.kts) preferred for new projects

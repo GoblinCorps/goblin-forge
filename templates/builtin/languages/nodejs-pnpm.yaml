@@ -1,0 +1,17 @@
+name: nodejs-pnpm
+description: Node.js project with pnpm
+category: languages
+extends: nodejs
+priority: 90
+
+detect:
+  files:
+    - pnpm-lock.yaml
+
+variables:
+  package_manager: pnpm
+
+agent_context: |
+  This is a Node.js project using pnpm as the package manager.
+  Use 'pnpm add' to install packages.
+  pnpm uses a content-addressable store for efficient disk usage.

@@ -1,0 +1,16 @@
+name: cargo-build
+description: Cargo build task
+category: build
+priority: 30
+
+commands:
+  build: cargo build
+  build-release: cargo build --release
+  check: cargo check
+
+agent_context: |
+  This task runs cargo build. Ensure:
+  - Code compiles without errors
+  - Run clippy for additional lints
+  - Use --release for production builds
+  - Check for unused dependencies

@@ -1,0 +1,27 @@
+name: remix
+description: Remix React framework
+category: frameworks
+extends: nodejs
+priority: 110
+
+detect:
+  content:
+    - file: package.json
+      pattern: '"@remix-run/react"'
+
+commands:
+  dev: "{{.package_manager}} run dev"
+  build: "{{.package_manager}} run build"
+  start: "{{.package_manager}} start"
+
+ports:
+  - 3000
+
+agent_context: |
+  This is a Remix project - a full-stack React framework.
+  Key conventions:
+  - Routes in app/routes/ directory
+  - Loaders for data fetching on the server
+  - Actions for form submissions and mutations
+  - Nested routing with layout components
+  - Progressive enhancement by default

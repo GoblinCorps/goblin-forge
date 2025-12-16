@@ -1,0 +1,33 @@
+name: golang
+description: Go project with modules
+category: languages
+priority: 50
+
+detect:
+  files:
+    - go.mod
+
+variables:
+  go: go
+
+setup:
+  - name: Download dependencies
+    command: go mod download
+    on_fail: warn
+
+commands:
+  build: go build ./...
+  run: go run .
+  test: go test ./...
+  test-verbose: go test -v ./...
+  test-cover: go test -cover ./...
+  lint: golangci-lint run
+  fmt: gofmt -w .
+  tidy: go mod tidy
+  vet: go vet ./...
+
+agent_context: |
+  This is a Go project using Go modules for dependency management.
+  Follow Go idioms: error handling with explicit checks, short variable names,
+  and interface-driven design. Use go fmt for formatting.
+  Test files should be named *_test.go.

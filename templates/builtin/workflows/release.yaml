@@ -1,0 +1,37 @@
+name: release
+description: Release preparation workflow
+category: workflows
+priority: 50
+
+agent_context: |
+  This goblin is preparing a release. Follow this checklist:
+
+  1. Pre-Release Checks
+     - All tests passing
+     - No linting errors
+     - Dependencies up to date
+     - Security vulnerabilities resolved
+
+  2. Version Bump
+     - Update version in package.json/pyproject.toml/Cargo.toml
+     - Follow semantic versioning (major.minor.patch)
+     - Major: breaking changes
+     - Minor: new features, backward compatible
+     - Patch: bug fixes
+
+  3. Changelog
+     - Document all changes since last release
+     - Group by: Added, Changed, Fixed, Removed
+     - Include issue/PR references
+
+  4. Documentation
+     - Update README if needed
+     - Update API documentation
+     - Review migration guide if breaking changes
+
+  5. Release Commit
+     - Commit message: "Release vX.Y.Z"
+     - Tag the commit: git tag vX.Y.Z
+     - Push tags: git push --tags
+
+  Generate a release summary with highlights for the changelog.

@@ -1,0 +1,16 @@
+name: cargo-test
+description: Cargo test task
+category: build
+priority: 30
+
+commands:
+  test: cargo test
+  test-verbose: cargo test -- --nocapture
+  test-doc: cargo test --doc
+
+agent_context: |
+  This task runs cargo tests. Ensure:
+  - All tests pass
+  - Documentation tests pass
+  - Integration tests run
+  - Use #[cfg(test)] for test modules

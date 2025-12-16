@@ -1,0 +1,19 @@
+name: ruby
+description: Ruby project with Bundler
+category: languages
+priority: 50
+
+detect:
+  files:
+    - Gemfile
+
+commands:
+  install: bundle install
+  console: bundle exec irb
+  test: bundle exec rspec
+  lint: bundle exec rubocop
+
+agent_context: |
+  This is a Ruby project using Bundler for dependency management.
+  Follow Ruby idioms: duck typing, blocks, and convention over configuration.
+  Use Gemfile for dependencies and bundle exec for running commands.

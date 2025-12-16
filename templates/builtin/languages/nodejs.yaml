@@ -1,0 +1,33 @@
+name: nodejs
+description: Node.js project with npm
+category: languages
+priority: 50
+
+detect:
+  files:
+    - package.json
+
+variables:
+  package_manager: npm
+
+setup:
+  - name: Install dependencies
+    command: "{{.package_manager}} install"
+    on_fail: error
+
+commands:
+  install: "{{.package_manager}} install"
+  build: "{{.package_manager}} run build"
+  dev: "{{.package_manager}} run dev"
+  test: "{{.package_manager}} test"
+  lint: "{{.package_manager}} run lint"
+  start: "{{.package_manager}} start"
+
+ports:
+  - 3000
+  - 5173
+
+agent_context: |
+  This is a Node.js project. Use npm for package management.
+  Available scripts can be found in package.json.
+  Prefer ES modules and modern JavaScript/TypeScript practices.

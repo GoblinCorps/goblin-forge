@@ -1,0 +1,15 @@
+name: npm-build
+description: npm build task
+category: build
+priority: 30
+
+commands:
+  build: npm run build
+  build-prod: npm run build -- --mode production
+
+agent_context: |
+  This task runs npm build. Ensure:
+  - All dependencies are installed
+  - Environment variables are set
+  - Build output goes to dist/ or build/
+  - Check for build warnings and errors

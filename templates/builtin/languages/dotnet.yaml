@@ -1,0 +1,30 @@
+name: dotnet
+description: .NET project with C#
+category: languages
+priority: 50
+
+detect:
+  files:
+    - "*.csproj"
+    - "*.sln"
+
+commands:
+  build: dotnet build
+  run: dotnet run
+  test: dotnet test
+  watch: dotnet watch run
+  publish: dotnet publish -c Release
+  restore: dotnet restore
+
+ports:
+  - 5000
+  - 5001
+
+agent_context: |
+  This is a .NET project using C#.
+  Key conventions:
+  - .csproj files define project configuration
+  - .sln files for multi-project solutions
+  - Use async/await for async operations
+  - Dependency injection via Microsoft.Extensions.DependencyInjection
+  - Configuration in appsettings.json

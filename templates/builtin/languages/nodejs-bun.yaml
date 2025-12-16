@@ -1,0 +1,25 @@
+name: nodejs-bun
+description: Node.js project with Bun
+category: languages
+extends: nodejs
+priority: 100
+
+detect:
+  files:
+    - bun.lockb
+
+variables:
+  package_manager: bun
+
+commands:
+  install: bun install
+  build: bun run build
+  dev: bun run dev
+  test: bun test
+  start: bun start
+
+agent_context: |
+  This is a project using Bun as the JavaScript runtime.
+  Bun is an all-in-one toolkit with fast installation and execution.
+  Use 'bun add' to install packages.
+  Bun has built-in TypeScript support without transpilation.

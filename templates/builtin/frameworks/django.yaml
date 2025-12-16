@@ -1,0 +1,36 @@
+name: django
+description: Django Python web framework
+category: frameworks
+extends: python
+priority: 110
+
+detect:
+  files:
+    - manage.py
+  content:
+    - file: pyproject.toml
+      pattern: django
+
+variables:
+  framework: django
+
+commands:
+  dev: python manage.py runserver
+  migrate: python manage.py migrate
+  makemigrations: python manage.py makemigrations
+  shell: python manage.py shell
+  test: python manage.py test
+  collectstatic: python manage.py collectstatic
+
+ports:
+  - 8000
+
+agent_context: |
+  This is a Django project - a batteries-included Python web framework.
+  Key conventions:
+  - Apps in separate directories with models.py, views.py, urls.py
+  - Settings in settings.py or settings/ directory
+  - Use Django ORM for database access
+  - Templates in templates/ directory
+  - Static files in static/ directory
+  - Run migrations after model changes

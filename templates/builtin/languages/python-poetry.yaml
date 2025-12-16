@@ -1,0 +1,29 @@
+name: python-poetry
+description: Python project with Poetry
+category: languages
+extends: python
+priority: 95
+
+detect:
+  files:
+    - poetry.lock
+
+setup:
+  - name: Install dependencies
+    command: poetry install
+    on_fail: error
+
+commands:
+  install: poetry install
+  add: poetry add
+  remove: poetry remove
+  run: poetry run
+  test: poetry run pytest
+  lint: poetry run ruff check .
+  format: poetry run ruff format .
+  shell: poetry shell
+
+agent_context: |
+  This is a Python project using Poetry for dependency management.
+  Use 'poetry add' to add packages and 'poetry run' for commands.
+  pyproject.toml contains all project configuration.

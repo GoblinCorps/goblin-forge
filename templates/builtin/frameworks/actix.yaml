@@ -1,0 +1,30 @@
+name: actix
+description: Actix Web Rust framework
+category: frameworks
+extends: rust
+priority: 110
+
+detect:
+  content:
+    - file: Cargo.toml
+      pattern: actix-web
+
+variables:
+  framework: actix
+
+commands:
+  dev: cargo watch -x run
+  build: cargo build --release
+  test: cargo test
+
+ports:
+  - 8080
+
+agent_context: |
+  This is an Actix Web project - a powerful Rust web framework.
+  Key features:
+  - Actor model for concurrent request handling
+  - Extractors for type-safe request parsing
+  - Middleware with wrap() and wrap_fn()
+  - Async handlers with #[actix_web::main]
+  - Use web::Data for shared application state

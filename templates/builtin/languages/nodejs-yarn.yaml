@@ -1,0 +1,25 @@
+name: nodejs-yarn
+description: Node.js project with Yarn
+category: languages
+extends: nodejs
+priority: 85
+
+detect:
+  files:
+    - yarn.lock
+
+variables:
+  package_manager: yarn
+
+commands:
+  install: yarn install
+  add: yarn add
+  remove: yarn remove
+  dev: yarn dev
+  build: yarn build
+  test: yarn test
+
+agent_context: |
+  This is a Node.js project using Yarn as the package manager.
+  Use 'yarn add' to install packages.
+  Yarn uses a lockfile (yarn.lock) for deterministic installs.

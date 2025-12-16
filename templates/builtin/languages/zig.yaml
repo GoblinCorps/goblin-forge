@@ -1,0 +1,22 @@
+name: zig
+description: Zig project
+category: languages
+priority: 50
+
+detect:
+  files:
+    - build.zig
+
+commands:
+  build: zig build
+  run: zig build run
+  test: zig build test
+  fmt: zig fmt .
+
+agent_context: |
+  This is a Zig project - a systems programming language.
+  Key features:
+  - No hidden control flow or memory allocations
+  - Compile-time code execution
+  - Interop with C/C++ code
+  - build.zig for build configuration

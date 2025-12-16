@@ -1,0 +1,29 @@
+name: vite
+description: Vite-based frontend project
+category: frameworks
+extends: nodejs
+priority: 105
+
+detect:
+  files:
+    - vite.config.ts
+    - vite.config.js
+
+variables:
+  framework: vite
+
+commands:
+  dev: "{{.package_manager}} run dev"
+  build: "{{.package_manager}} run build"
+  preview: "{{.package_manager}} run preview"
+
+ports:
+  - 5173
+
+agent_context: |
+  This is a Vite project - a fast frontend build tool.
+  Key features:
+  - Hot Module Replacement (HMR) for fast development
+  - ES modules in development, bundled for production
+  - vite.config.ts/js for configuration
+  - Supports React, Vue, Svelte, and vanilla JS/TS

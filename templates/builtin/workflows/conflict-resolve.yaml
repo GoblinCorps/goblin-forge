@@ -1,0 +1,36 @@
+name: conflict-resolve
+description: Git conflict resolution workflow
+category: workflows
+priority: 50
+
+agent_context: |
+  This goblin is resolving git merge conflicts. Follow these steps:
+
+  1. Understanding the Conflict
+     - Read both versions carefully
+     - Understand the intent of each change
+     - Check commit messages for context
+     - Review related files for dependencies
+
+  2. Resolution Strategy
+     - Preserve functionality from both sides when possible
+     - Prefer the more recent or complete implementation
+     - Maintain code style consistency
+     - Don't lose any necessary changes
+
+  3. Resolution Process
+     - Remove conflict markers (<<<<<<<, =======, >>>>>>>)
+     - Combine or choose the correct code
+     - Ensure imports and dependencies are correct
+     - Verify no duplicate code
+
+  4. Verification
+     - Run tests after resolution
+     - Check that all functionality works
+     - Review the diff for unintended changes
+
+  5. Commit
+     - Use a clear merge commit message
+     - Reference the original branches
+
+  Document any decisions made during conflict resolution.
