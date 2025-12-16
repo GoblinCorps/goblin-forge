@@ -5,8 +5,10 @@ import (
 	"os"
 
 	"github.com/astoreyai/goblin-forge/internal/config"
+	"github.com/astoreyai/goblin-forge/internal/coordinator"
 	"github.com/astoreyai/goblin-forge/internal/logging"
 	"github.com/astoreyai/goblin-forge/internal/storage"
+	"github.com/astoreyai/goblin-forge/internal/tui"
 	"github.com/spf13/cobra"
 )
 
@@ -54,6 +56,7 @@ designed to coordinate and execute multiple coding-focused CLI agents in paralle
 		newDiffCmd(),
 		newTaskCmd(),
 		newStatusCmd(),
+		newTopCmd(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
@@ -323,6 +326,30 @@ func newStatusCmd() *cobra.Command {
 		Short: "Show system status",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return showStatus()
+		},
+	}
+}
+
+// === Top Command (TUI Dashboard) ===
+
+func newTopCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "top",
+		Short: "Launch interactive TUI dashboard",
+		Long: `Launch an htop-like interactive terminal UI for managing goblins.
+
+Keybindings:
+  j/k, Up/Down  Navigate goblin list
+  a, Enter      Attach to selected goblin
+  s             Stop selected goblin
+  K (Shift+K)   Kill selected goblin
+  d             Show diff for selected goblin
+  r             Refresh goblin list
+  ?             Show help
+  q             Quit`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			coord := coordinator.New(db, cfg, log)
+			return tui.Run(coord)
 		},
 	}
 }
