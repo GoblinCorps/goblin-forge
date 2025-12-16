@@ -238,7 +238,54 @@ var execCommand = func(path string, args []string, env []string) error {
 	return cmd.Run()
 }
 
-// SendKeys sends keystrokes to a session
+// escapeTmuxContent escapes content for safe transmission via tmux send-keys.
+// Order matters: backslashes must be escaped first to avoid double-escaping.
+func escapeTmuxContent(s string) string {
+	s = strings.ReplaceAll(s, "\\", "\\\\")
+	s = strings.ReplaceAll(s, "\n", "\\n")
+	return s
+}
+
+// SendText sends literal text to a session using tmux's -l (literal) flag.
+// The text is escaped for safe transmission. Use SendKey for special keys.
+func (m *Manager) SendText(name, text string) error {
+	if !m.sessionExists(name) {
+		return fmt.Errorf("session '%s' not found", name)
+	}
+
+	escaped := escapeTmuxContent(text)
+	args := []string{"-L", m.socketName, "send-keys", "-t", name, "-l", escaped}
+
+	cmd := exec.Command("tmux", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to send text: %w\nOutput: %s", err, string(output))
+	}
+
+	return nil
+}
+
+// SendKey sends a special key (Enter, C-c, Escape, etc.) to a session.
+// Does NOT use -l flag, so tmux interprets the key name.
+func (m *Manager) SendKey(name, key string) error {
+	if !m.sessionExists(name) {
+		return fmt.Errorf("session '%s' not found", name)
+	}
+
+	args := []string{"-L", m.socketName, "send-keys", "-t", name, key}
+
+	cmd := exec.Command("tmux", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to send key: %w\nOutput: %s", err, string(output))
+	}
+
+	return nil
+}
+
+// SendKeys sends keystrokes to a session.
+// Deprecated: Use SendText for literal text or SendKey for special keys.
+// This method exists for backward compatibility and does not escape content.
 func (m *Manager) SendKeys(name string, keys ...string) error {
 	if !m.sessionExists(name) {
 		return fmt.Errorf("session '%s' not found", name)
@@ -256,9 +303,15 @@ func (m *Manager) SendKeys(name string, keys ...string) error {
 	return nil
 }
 
-// SendCommand sends a command (with Enter key) to a session
+// SendCommand sends a command (with Enter key) to a session.
+// Text is sent literally, then Enter is sent as a separate key.
 func (m *Manager) SendCommand(name, command string) error {
-	return m.SendKeys(name, command, "Enter")
+	// Send text literally
+	if err := m.SendText(name, command); err != nil {
+		return err
+	}
+	// Send Enter as special key (no -l flag)
+	return m.SendKey(name, "Enter")
 }
 
 // Kill terminates a session

@@ -331,3 +331,133 @@ func TestCaptureDirectory(t *testing.T) {
 
 	_ = mgr
 }
+
+func TestEscapeTmuxContent(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "no escaping needed",
+			input:    "hello world",
+			expected: "hello world",
+		},
+		{
+			name:     "newline escaping",
+			input:    "line1\nline2",
+			expected: "line1\\nline2",
+		},
+		{
+			name:     "backslash escaping",
+			input:    "path\\to\\file",
+			expected: "path\\\\to\\\\file",
+		},
+		{
+			name:     "mixed escaping",
+			input:    "path\\to\\file\nmore",
+			expected: "path\\\\to\\\\file\\nmore",
+		},
+		{
+			name:     "regex pattern",
+			input:    `\d+\.\d+`,
+			expected: `\\d+\\.\\d+`,
+		},
+		{
+			name:     "empty string",
+			input:    "",
+			expected: "",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := escapeTmuxContent(tc.input)
+			if result != tc.expected {
+				t.Errorf("escapeTmuxContent(%q) = %q, want %q", tc.input, result, tc.expected)
+			}
+		})
+	}
+}
+
+func TestSendText(t *testing.T) {
+	if !tmuxAvailable() {
+		t.Skip("tmux not available")
+	}
+
+	tmpDir, _ := os.MkdirTemp("", "gforge-tmux-test-*")
+	defer os.RemoveAll(tmpDir)
+
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-sendtext",
+		CaptureDir: tmpDir,
+	})
+
+	// Create session
+	_, err := mgr.Create("sendtext-test", tmpDir)
+	if err != nil {
+		t.Fatalf("Failed to create session: %v", err)
+	}
+	defer mgr.Kill("sendtext-test")
+
+	// Send literal text including special key names
+	// Without -l flag, "Enter" would be interpreted as a key press
+	err = mgr.SendText("sendtext-test", "This text contains Enter and C-c literally")
+	if err != nil {
+		t.Fatalf("Failed to send text: %v", err)
+	}
+}
+
+func TestSendKey(t *testing.T) {
+	if !tmuxAvailable() {
+		t.Skip("tmux not available")
+	}
+
+	tmpDir, _ := os.MkdirTemp("", "gforge-tmux-test-*")
+	defer os.RemoveAll(tmpDir)
+
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-sendkey",
+		CaptureDir: tmpDir,
+	})
+
+	// Create session
+	_, err := mgr.Create("sendkey-test", tmpDir)
+	if err != nil {
+		t.Fatalf("Failed to create session: %v", err)
+	}
+	defer mgr.Kill("sendkey-test")
+
+	// Send special keys
+	err = mgr.SendKey("sendkey-test", "Enter")
+	if err != nil {
+		t.Fatalf("Failed to send Enter key: %v", err)
+	}
+
+	err = mgr.SendKey("sendkey-test", "C-c")
+	if err != nil {
+		t.Fatalf("Failed to send C-c key: %v", err)
+	}
+}
+
+func TestSendTextNonexistentSession(t *testing.T) {
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-noexist-text",
+	})
+
+	err := mgr.SendText("nonexistent", "hello")
+	if err == nil {
+		t.Error("Should fail for nonexistent session")
+	}
+}
+
+func TestSendKeyNonexistentSession(t *testing.T) {
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-noexist-key",
+	})
+
+	err := mgr.SendKey("nonexistent", "Enter")
+	if err == nil {
+		t.Error("Should fail for nonexistent session")
+	}
+}
