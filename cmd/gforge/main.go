@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/astoreyai/goblin-forge/internal/agents"
 	"github.com/astoreyai/goblin-forge/internal/config"
 	"github.com/astoreyai/goblin-forge/internal/coordinator"
 	"github.com/astoreyai/goblin-forge/internal/logging"
+	"github.com/astoreyai/goblin-forge/internal/mcp"
 	"github.com/astoreyai/goblin-forge/internal/storage"
 	"github.com/astoreyai/goblin-forge/internal/tui"
 	"github.com/spf13/cobra"
@@ -57,6 +59,7 @@ designed to coordinate and execute multiple coding-focused CLI agents in paralle
 		newTaskCmd(),
 		newStatusCmd(),
 		newTopCmd(),
+		newMCPServerCmd(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
@@ -350,6 +353,49 @@ Keybindings:
 		RunE: func(cmd *cobra.Command, args []string) error {
 			coord := coordinator.New(db, cfg, log)
 			return tui.Run(coord)
+		},
+	}
+}
+
+// === MCP Server Command ===
+
+func newMCPServerCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "mcp-server",
+		Short: "Run as an MCP (Model Context Protocol) server",
+		Long: `Run goblin-forge as an MCP server over stdio.
+
+This allows AI agents like Crush or Claude to orchestrate goblins via MCP tools.
+
+Available tools:
+  gforge_spawn   - Spawn a new goblin with isolated tmux/worktree
+  gforge_list    - List all goblins with status
+  gforge_status  - Get detailed goblin status
+  gforge_send    - Send text/command to a goblin
+  gforge_output  - Get recent terminal output from a goblin
+  gforge_stop    - Stop a running goblin
+  gforge_kill    - Kill a goblin and cleanup resources
+  gforge_stats   - Get aggregate statistics
+
+Configure in crush.json:
+  {
+    "mcp": {
+      "goblin-forge": {
+        "type": "stdio",
+        "command": "gforge",
+        "args": ["mcp-server"]
+      }
+    }
+  }`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			coord := coordinator.New(db, cfg, log)
+			registry := agents.NewRegistry()
+
+			server := mcp.NewServer(coord, registry, mcp.Config{
+				TmuxSocket: cfg.Tmux.SocketName,
+			})
+
+			return server.Serve()
 		},
 	}
 }

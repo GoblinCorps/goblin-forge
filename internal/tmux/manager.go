@@ -43,6 +43,10 @@ type SendOptions struct {
 // DefaultTextDelay is the base delay after sending text
 const DefaultTextDelay = 50 * time.Millisecond
 
+// LargeTextThreshold is the size above which load-buffer is used instead of send-keys.
+// Default is 4KB which is well below typical shell line limits.
+const LargeTextThreshold = 4096
+
 // calculatePostDelay determines appropriate delay based on content length
 func calculatePostDelay(textLen int) time.Duration {
 	// Base delay + 1ms per 100 characters for large content
@@ -270,6 +274,8 @@ func (m *Manager) SendText(name, text string) error {
 }
 
 // SendTextWithOptions sends literal text with configurable options.
+// For text larger than LargeTextThreshold (4KB), automatically uses
+// the load-buffer/paste-buffer approach for reliability.
 func (m *Manager) SendTextWithOptions(name, text string, opts SendOptions) error {
 	session := m.Get(name)
 	if session == nil {
@@ -280,13 +286,24 @@ func (m *Manager) SendTextWithOptions(name, text string, opts SendOptions) error
 	session.sendMu.Lock()
 	defer session.sendMu.Unlock()
 
-	escaped := escapeTmuxContent(text)
-	args := []string{"-L", m.socketName, "send-keys", "-t", name, "-l", escaped}
+	var err error
+	if len(text) > LargeTextThreshold {
+		// Use buffer approach for large content
+		err = m.sendViaBuffer(name, text)
+	} else {
+		// Use send-keys for normal content
+		escaped := escapeTmuxContent(text)
+		args := []string{"-L", m.socketName, "send-keys", "-t", name, "-l", escaped}
 
-	cmd := exec.Command("tmux", args...)
-	output, err := cmd.CombinedOutput()
+		cmd := exec.Command("tmux", args...)
+		output, cmdErr := cmd.CombinedOutput()
+		if cmdErr != nil {
+			err = fmt.Errorf("failed to send text: %w\nOutput: %s", cmdErr, string(output))
+		}
+	}
+
 	if err != nil {
-		return fmt.Errorf("failed to send text: %w\nOutput: %s", err, string(output))
+		return err
 	}
 
 	// Apply post-send delay unless explicitly disabled
@@ -297,6 +314,65 @@ func (m *Manager) SendTextWithOptions(name, text string, opts SendOptions) error
 		}
 		time.Sleep(delay)
 	}
+
+	return nil
+}
+
+// sendViaBuffer sends large text using tmux's load-buffer/paste-buffer mechanism.
+// This avoids shell line limits and is more reliable for very long content.
+// Must be called with session.sendMu already held.
+func (m *Manager) sendViaBuffer(name, text string) error {
+	// Create temp file for the buffer
+	tmpFile, err := os.CreateTemp("", "gforge-buffer-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temp file: %w", err)
+	}
+	tmpPath := tmpFile.Name()
+	defer os.Remove(tmpPath) // Clean up temp file
+
+	// Write content to temp file
+	if _, err := tmpFile.WriteString(text); err != nil {
+		tmpFile.Close()
+		return fmt.Errorf("failed to write to temp file: %w", err)
+	}
+	tmpFile.Close()
+
+	// Load file into tmux buffer
+	loadCmd := exec.Command("tmux", "-L", m.socketName, "load-buffer", tmpPath)
+	output, err := loadCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to load buffer: %w\nOutput: %s", err, string(output))
+	}
+
+	// Paste buffer into target pane
+	pasteCmd := exec.Command("tmux", "-L", m.socketName, "paste-buffer", "-t", name)
+	output, err = pasteCmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to paste buffer: %w\nOutput: %s", err, string(output))
+	}
+
+	return nil
+}
+
+// SendLargeText explicitly sends text via the buffer mechanism,
+// regardless of size. Useful when you know the content is large
+// or when send-keys is failing for other reasons.
+func (m *Manager) SendLargeText(name, text string) error {
+	session := m.Get(name)
+	if session == nil {
+		return fmt.Errorf("session '%s' not found", name)
+	}
+
+	session.sendMu.Lock()
+	defer session.sendMu.Unlock()
+
+	if err := m.sendViaBuffer(name, text); err != nil {
+		return err
+	}
+
+	// Longer delay for large content
+	delay := calculatePostDelay(len(text))
+	time.Sleep(delay)
 
 	return nil
 }
