@@ -5,13 +5,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/astoreyai/goblin-forge/internal/agents"
 	"github.com/astoreyai/goblin-forge/internal/config"
 	"github.com/astoreyai/goblin-forge/internal/logging"
 	"github.com/astoreyai/goblin-forge/internal/storage"
+	"github.com/astoreyai/goblin-forge/internal/util"
 	"github.com/google/uuid"
 )
 
@@ -212,17 +212,26 @@ func (c *Coordinator) killTmuxSession(sessionName string) error {
 func (c *Coordinator) startAgent(sessionName string, agent *agents.Agent, workdir string) error {
 	socketName := c.cfg.Tmux.SocketName
 
-	// Build command string
+	// Build command string with proper shell escaping
 	cmdParts := agent.GetCommand()
-	cmdStr := strings.Join(cmdParts, " ")
+	cmdStr := util.ShellJoin(cmdParts)
 
-	// Send the command to tmux
+	// Send the command to tmux using literal mode (-l) to avoid key interpretation
 	cmd := exec.Command("tmux", "-L", socketName,
-		"send-keys", "-t", sessionName, cmdStr, "Enter")
+		"send-keys", "-t", sessionName, "-l", cmdStr)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("tmux send-keys failed: %s\n%s", err, string(output))
+	}
+
+	// Send Enter separately (not literal)
+	cmd = exec.Command("tmux", "-L", socketName,
+		"send-keys", "-t", sessionName, "Enter")
+
+	output, err = cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("tmux send-keys Enter failed: %s\n%s", err, string(output))
 	}
 
 	return nil
@@ -394,13 +403,22 @@ func (c *Coordinator) SendTask(nameOrID, task string) error {
 
 	socketName := c.cfg.Tmux.SocketName
 
-	// Send the task as input to the tmux session
+	// Send the task as literal text to avoid shell interpretation
 	cmd := exec.Command("tmux", "-L", socketName,
-		"send-keys", "-t", goblin.TmuxSession, task, "Enter")
+		"send-keys", "-t", goblin.TmuxSession, "-l", task)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to send task: %s\n%s", err, string(output))
+	}
+
+	// Send Enter separately
+	cmd = exec.Command("tmux", "-L", socketName,
+		"send-keys", "-t", goblin.TmuxSession, "Enter")
+
+	output, err = cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to send Enter: %s\n%s", err, string(output))
 	}
 
 	if c.log != nil {
