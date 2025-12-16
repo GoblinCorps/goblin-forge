@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -598,5 +599,89 @@ func TestConcurrentSendsSameSession(t *testing.T) {
 	// Check for errors
 	for err := range errChan {
 		t.Errorf("Concurrent send failed: %v", err)
+	}
+}
+
+func TestSendLargeText(t *testing.T) {
+	if !tmuxAvailable() {
+		t.Skip("tmux not available")
+	}
+
+	tmpDir, _ := os.MkdirTemp("", "gforge-tmux-test-*")
+	defer os.RemoveAll(tmpDir)
+
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-large",
+		CaptureDir: tmpDir,
+	})
+
+	// Create session
+	_, err := mgr.Create("large-test", tmpDir)
+	if err != nil {
+		t.Fatalf("Failed to create session: %v", err)
+	}
+	defer mgr.Kill("large-test")
+
+	// Generate large content (10KB)
+	largeContent := strings.Repeat("This is a test line for large content handling.\n", 200)
+	if len(largeContent) < LargeTextThreshold {
+		t.Fatalf("Test content too small: %d < %d", len(largeContent), LargeTextThreshold)
+	}
+
+	// Test explicit SendLargeText
+	err = mgr.SendLargeText("large-test", largeContent)
+	if err != nil {
+		t.Fatalf("SendLargeText failed: %v", err)
+	}
+}
+
+func TestSendTextAutoBuffer(t *testing.T) {
+	if !tmuxAvailable() {
+		t.Skip("tmux not available")
+	}
+
+	tmpDir, _ := os.MkdirTemp("", "gforge-tmux-test-*")
+	defer os.RemoveAll(tmpDir)
+
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-autobuf",
+		CaptureDir: tmpDir,
+	})
+
+	// Create session
+	_, err := mgr.Create("autobuf-test", tmpDir)
+	if err != nil {
+		t.Fatalf("Failed to create session: %v", err)
+	}
+	defer mgr.Kill("autobuf-test")
+
+	// Generate large content (5KB - above threshold)
+	largeContent := strings.Repeat("x", LargeTextThreshold+1000)
+
+	// SendTextWithOptions should auto-switch to buffer approach
+	err = mgr.SendTextWithOptions("autobuf-test", largeContent, SendOptions{NoDelay: true})
+	if err != nil {
+		t.Fatalf("Auto-buffer SendText failed: %v", err)
+	}
+}
+
+func TestSendLargeTextNonexistent(t *testing.T) {
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-large-noexist",
+	})
+
+	err := mgr.SendLargeText("nonexistent", "hello")
+	if err == nil {
+		t.Error("Should fail for nonexistent session")
+	}
+}
+
+func TestLargeTextThreshold(t *testing.T) {
+	// Verify the threshold is reasonable
+	if LargeTextThreshold < 1024 {
+		t.Errorf("LargeTextThreshold too small: %d", LargeTextThreshold)
+	}
+	if LargeTextThreshold > 65536 {
+		t.Errorf("LargeTextThreshold too large: %d", LargeTextThreshold)
 	}
 }
