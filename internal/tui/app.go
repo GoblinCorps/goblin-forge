@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -189,7 +190,7 @@ func (a *App) attachToSelected() tea.Cmd {
 	goblin := a.goblins[a.selectedIndex]
 
 	return tea.ExecProcess(
-		tea.Command("tmux", "-L", "gforge", "attach-session", "-t", goblin.TmuxSession),
+		exec.Command("tmux", "-L", "gforge", "attach-session", "-t", goblin.TmuxSession),
 		func(err error) tea.Msg {
 			return a.refreshGoblins()()
 		},

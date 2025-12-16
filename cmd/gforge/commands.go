@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/astoreyai/goblin-forge/internal/agents"
+	"github.com/astoreyai/goblin-forge/internal/config"
 	"github.com/astoreyai/goblin-forge/internal/coordinator"
 	"github.com/astoreyai/goblin-forge/internal/tmux"
 	"github.com/astoreyai/goblin-forge/internal/workspace"
