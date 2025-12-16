@@ -31,6 +31,22 @@ type Session struct {
 	CreatedAt   time.Time
 	AttachedAt  *time.Time
 	capturePath string
+	sendMu      sync.Mutex // Protects send operations to prevent interleaved input
+}
+
+// SendOptions configures send behavior
+type SendOptions struct {
+	PostDelay time.Duration // Delay after sending (0 = auto-calculate for text)
+	NoDelay   bool          // Skip delay entirely (for key presses)
+}
+
+// DefaultTextDelay is the base delay after sending text
+const DefaultTextDelay = 50 * time.Millisecond
+
+// calculatePostDelay determines appropriate delay based on content length
+func calculatePostDelay(textLen int) time.Duration {
+	// Base delay + 1ms per 100 characters for large content
+	return DefaultTextDelay + time.Duration(textLen/100)*time.Millisecond
 }
 
 // SessionStatus represents the state of a session
@@ -248,10 +264,21 @@ func escapeTmuxContent(s string) string {
 
 // SendText sends literal text to a session using tmux's -l (literal) flag.
 // The text is escaped for safe transmission. Use SendKey for special keys.
+// Includes automatic post-send delay based on content length.
 func (m *Manager) SendText(name, text string) error {
-	if !m.sessionExists(name) {
+	return m.SendTextWithOptions(name, text, SendOptions{})
+}
+
+// SendTextWithOptions sends literal text with configurable options.
+func (m *Manager) SendTextWithOptions(name, text string, opts SendOptions) error {
+	session := m.Get(name)
+	if session == nil {
 		return fmt.Errorf("session '%s' not found", name)
 	}
+
+	// Acquire per-session lock to prevent interleaved sends
+	session.sendMu.Lock()
+	defer session.sendMu.Unlock()
 
 	escaped := escapeTmuxContent(text)
 	args := []string{"-L", m.socketName, "send-keys", "-t", name, "-l", escaped}
@@ -262,15 +289,30 @@ func (m *Manager) SendText(name, text string) error {
 		return fmt.Errorf("failed to send text: %w\nOutput: %s", err, string(output))
 	}
 
+	// Apply post-send delay unless explicitly disabled
+	if !opts.NoDelay {
+		delay := opts.PostDelay
+		if delay == 0 {
+			delay = calculatePostDelay(len(text))
+		}
+		time.Sleep(delay)
+	}
+
 	return nil
 }
 
 // SendKey sends a special key (Enter, C-c, Escape, etc.) to a session.
 // Does NOT use -l flag, so tmux interprets the key name.
+// No delay is applied since key presses are instantaneous.
 func (m *Manager) SendKey(name, key string) error {
-	if !m.sessionExists(name) {
+	session := m.Get(name)
+	if session == nil {
 		return fmt.Errorf("session '%s' not found", name)
 	}
+
+	// Acquire per-session lock to prevent interleaved sends
+	session.sendMu.Lock()
+	defer session.sendMu.Unlock()
 
 	args := []string{"-L", m.socketName, "send-keys", "-t", name, key}
 
@@ -287,9 +329,14 @@ func (m *Manager) SendKey(name, key string) error {
 // Deprecated: Use SendText for literal text or SendKey for special keys.
 // This method exists for backward compatibility and does not escape content.
 func (m *Manager) SendKeys(name string, keys ...string) error {
-	if !m.sessionExists(name) {
+	session := m.Get(name)
+	if session == nil {
 		return fmt.Errorf("session '%s' not found", name)
 	}
+
+	// Acquire per-session lock to prevent interleaved sends
+	session.sendMu.Lock()
+	defer session.sendMu.Unlock()
 
 	args := []string{"-L", m.socketName, "send-keys", "-t", name}
 	args = append(args, keys...)

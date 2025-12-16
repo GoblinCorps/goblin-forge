@@ -1,10 +1,13 @@
 package tmux
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"testing"
+	"time"
 )
 
 func TestNewManager(t *testing.T) {
@@ -459,5 +462,141 @@ func TestSendKeyNonexistentSession(t *testing.T) {
 	err := mgr.SendKey("nonexistent", "Enter")
 	if err == nil {
 		t.Error("Should fail for nonexistent session")
+	}
+}
+
+func TestCalculatePostDelay(t *testing.T) {
+	tests := []struct {
+		name     string
+		textLen  int
+		expected time.Duration
+	}{
+		{
+			name:     "empty string",
+			textLen:  0,
+			expected: DefaultTextDelay, // 50ms
+		},
+		{
+			name:     "short text",
+			textLen:  50,
+			expected: DefaultTextDelay, // 50ms (50/100 = 0)
+		},
+		{
+			name:     "100 chars",
+			textLen:  100,
+			expected: DefaultTextDelay + 1*time.Millisecond, // 51ms
+		},
+		{
+			name:     "1000 chars",
+			textLen:  1000,
+			expected: DefaultTextDelay + 10*time.Millisecond, // 60ms
+		},
+		{
+			name:     "10000 chars (large paste)",
+			textLen:  10000,
+			expected: DefaultTextDelay + 100*time.Millisecond, // 150ms
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			result := calculatePostDelay(tc.textLen)
+			if result != tc.expected {
+				t.Errorf("calculatePostDelay(%d) = %v, want %v", tc.textLen, result, tc.expected)
+			}
+		})
+	}
+}
+
+func TestSendTextWithOptions(t *testing.T) {
+	if !tmuxAvailable() {
+		t.Skip("tmux not available")
+	}
+
+	tmpDir, _ := os.MkdirTemp("", "gforge-tmux-test-*")
+	defer os.RemoveAll(tmpDir)
+
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-sendopts",
+		CaptureDir: tmpDir,
+	})
+
+	// Create session
+	_, err := mgr.Create("sendopts-test", tmpDir)
+	if err != nil {
+		t.Fatalf("Failed to create session: %v", err)
+	}
+	defer mgr.Kill("sendopts-test")
+
+	// Test with NoDelay option (should be fast)
+	start := time.Now()
+	err = mgr.SendTextWithOptions("sendopts-test", "hello", SendOptions{NoDelay: true})
+	if err != nil {
+		t.Fatalf("Failed to send text: %v", err)
+	}
+	elapsed := time.Since(start)
+
+	// With NoDelay, should take less than 40ms (just tmux overhead)
+	if elapsed > 40*time.Millisecond {
+		t.Errorf("NoDelay took %v, expected < 40ms", elapsed)
+	}
+
+	// Test with default delay (should wait ~50ms)
+	start = time.Now()
+	err = mgr.SendTextWithOptions("sendopts-test", "hello", SendOptions{})
+	if err != nil {
+		t.Fatalf("Failed to send text: %v", err)
+	}
+	elapsed = time.Since(start)
+
+	// With default delay, should take at least 50ms
+	if elapsed < DefaultTextDelay {
+		t.Errorf("Default delay took %v, expected >= %v", elapsed, DefaultTextDelay)
+	}
+}
+
+func TestConcurrentSendsSameSession(t *testing.T) {
+	if !tmuxAvailable() {
+		t.Skip("tmux not available")
+	}
+
+	tmpDir, _ := os.MkdirTemp("", "gforge-tmux-test-*")
+	defer os.RemoveAll(tmpDir)
+
+	mgr := NewManager(Config{
+		SocketName: "gforge-test-concurrent",
+		CaptureDir: tmpDir,
+	})
+
+	// Create session
+	_, err := mgr.Create("concurrent-test", tmpDir)
+	if err != nil {
+		t.Fatalf("Failed to create session: %v", err)
+	}
+	defer mgr.Kill("concurrent-test")
+
+	// Send multiple texts concurrently
+	// The mutex should prevent interleaved output
+	var wg sync.WaitGroup
+	errChan := make(chan error, 3)
+
+	for i := 0; i < 3; i++ {
+		wg.Add(1)
+		go func(n int) {
+			defer wg.Done()
+			// Use NoDelay to speed up test
+			err := mgr.SendTextWithOptions("concurrent-test", fmt.Sprintf("msg%d", n), SendOptions{NoDelay: true})
+			if err != nil {
+				errChan <- err
+			}
+		}(i)
+	}
+
+	wg.Wait()
+	close(errChan)
+
+	// Check for errors
+	for err := range errChan {
+		t.Errorf("Concurrent send failed: %v", err)
 	}
 }
