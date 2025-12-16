@@ -276,3 +276,77 @@ func WriteEvent(dir string, event Event) error {
 
 	return os.WriteFile(path, data, 0644)
 }
+
+// ClaudeCodeConfig represents the Claude Code hooks.json format
+type ClaudeCodeConfig struct {
+	Hooks map[string][]ClaudeHookEntry `json:"hooks"`
+}
+
+// ClaudeHookEntry represents a single hook command
+type ClaudeHookEntry struct {
+	Command string `json:"command"`
+}
+
+// GenerateClaudeCodeConfig creates a hooks.json config for Claude Code
+// that writes events to the specified hooks directory.
+func GenerateClaudeCodeConfig(hooksDir, sessionID string) ClaudeCodeConfig {
+	// Base command that writes events to our hooks directory
+	baseCmd := fmt.Sprintf("gforge notify --session %s --hooks-dir %s", sessionID, hooksDir)
+
+	return ClaudeCodeConfig{
+		Hooks: map[string][]ClaudeHookEntry{
+			"SessionStart": {
+				{Command: baseCmd + " session-start"},
+			},
+			"UserPromptSubmit": {
+				{Command: baseCmd + ` prompt "$PROMPT"`},
+			},
+			"ToolUse": {
+				{Command: baseCmd + ` tool-start "$TOOL_NAME" "$TOOL_INPUT"`},
+			},
+			"ToolComplete": {
+				{Command: baseCmd + " tool-complete $TOOL_NAME $EXIT_CODE"},
+			},
+			"Stop": {
+				{Command: baseCmd + " session-stop $EXIT_CODE"},
+			},
+		},
+	}
+}
+
+// WriteClaudeCodeConfig writes the Claude Code hooks config to a file
+func WriteClaudeCodeConfig(path string, cfg ClaudeCodeConfig) error {
+	data, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal config: %w", err)
+	}
+
+	// Ensure parent directory exists
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return fmt.Errorf("failed to create config directory: %w", err)
+	}
+
+	return os.WriteFile(path, data, 0644)
+}
+
+// SetupClaudeCodeHooks creates the hooks directory and config for a Claude Code session.
+// Returns the path to the generated hooks.json file.
+func SetupClaudeCodeHooks(sessionID, workdir string, cfg Config) (string, *Watcher, error) {
+	// Create the watcher (creates hooks directory)
+	watcher, err := NewWatcher(cfg)
+	if err != nil {
+		return "", nil, err
+	}
+
+	// Generate Claude Code config
+	hooksCfg := GenerateClaudeCodeConfig(watcher.HooksDir(), sessionID)
+
+	// Write to workdir/.claude/hooks.json (project-level config)
+	configPath := filepath.Join(workdir, ".claude", "hooks.json")
+	if err := WriteClaudeCodeConfig(configPath, hooksCfg); err != nil {
+		watcher.Cleanup()
+		return "", nil, fmt.Errorf("failed to write hooks config: %w", err)
+	}
+
+	return configPath, watcher, nil
+}

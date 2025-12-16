@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -343,5 +344,88 @@ func TestCleanup(t *testing.T) {
 	// Verify directory is removed
 	if _, err := os.Stat(hooksDir); !os.IsNotExist(err) {
 		t.Error("hooks directory should be removed after cleanup")
+	}
+}
+
+func TestGenerateClaudeCodeConfig(t *testing.T) {
+	cfg := GenerateClaudeCodeConfig("/tmp/gforge/hooks/abc123", "abc123")
+
+	// Verify all hooks are present
+	expectedHooks := []string{"SessionStart", "UserPromptSubmit", "ToolUse", "ToolComplete", "Stop"}
+	for _, hook := range expectedHooks {
+		if _, ok := cfg.Hooks[hook]; !ok {
+			t.Errorf("missing hook: %s", hook)
+		}
+	}
+
+	// Verify command contains session ID and hooks dir
+	sessionStartCmd := cfg.Hooks["SessionStart"][0].Command
+	if !strings.Contains(sessionStartCmd, "abc123") {
+		t.Errorf("SessionStart command missing session ID: %s", sessionStartCmd)
+	}
+	if !strings.Contains(sessionStartCmd, "/tmp/gforge/hooks/abc123") {
+		t.Errorf("SessionStart command missing hooks dir: %s", sessionStartCmd)
+	}
+}
+
+func TestWriteClaudeCodeConfig(t *testing.T) {
+	tmpDir := t.TempDir()
+	configPath := filepath.Join(tmpDir, ".claude", "hooks.json")
+
+	cfg := GenerateClaudeCodeConfig("/tmp/test", "test-session")
+
+	if err := WriteClaudeCodeConfig(configPath, cfg); err != nil {
+		t.Fatalf("WriteClaudeCodeConfig failed: %v", err)
+	}
+
+	// Verify file exists
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		t.Fatal("config file not created")
+	}
+
+	// Verify content is valid JSON
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		t.Fatalf("ReadFile failed: %v", err)
+	}
+
+	var readCfg ClaudeCodeConfig
+	if err := json.Unmarshal(data, &readCfg); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	if len(readCfg.Hooks) != 5 {
+		t.Errorf("expected 5 hooks, got %d", len(readCfg.Hooks))
+	}
+}
+
+func TestSetupClaudeCodeHooks(t *testing.T) {
+	tmpDir := t.TempDir()
+	workdir := filepath.Join(tmpDir, "project")
+	os.MkdirAll(workdir, 0755)
+
+	configPath, watcher, err := SetupClaudeCodeHooks("setup-test", workdir, Config{
+		SessionID: "setup-test",
+		HooksDir:  filepath.Join(tmpDir, "hooks"),
+	})
+	if err != nil {
+		t.Fatalf("SetupClaudeCodeHooks failed: %v", err)
+	}
+	defer watcher.Cleanup()
+
+	// Verify config path
+	expectedPath := filepath.Join(workdir, ".claude", "hooks.json")
+	if configPath != expectedPath {
+		t.Errorf("configPath = %q, want %q", configPath, expectedPath)
+	}
+
+	// Verify config file exists
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		t.Error("config file not created")
+	}
+
+	// Verify hooks directory exists
+	if _, err := os.Stat(watcher.HooksDir()); os.IsNotExist(err) {
+		t.Error("hooks directory not created")
 	}
 }
